@@ -1,0 +1,7 @@
+HOW TO CREATE DATASETS 2026-07-27
+
+Since the csv datasets will be huge as 15 000 kB or more, I just put this .txt file to explain how to create those csv files.
+
+To create a csv file with variable z, you need to run "generate_pysr_data_withz.m" at the same directory as directly underneath the root folder, LuGre_Sim.
+
+Note that you better try to create the dataset with 2026-07-22 version. That is the latest for now and the version that be decided as final one on the first step(meaning, current step). I do not know for future. If is there anything have been updated, I notice it here.

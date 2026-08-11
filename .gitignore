@@ -1,0 +1,49 @@
+# --- FOR LuGre_Sim ---
+# MATLAB Specific
+*.slxc
+slprj/
+*.asv
+*.autosave
+*.p
+*.mex*          
+*.cache
+
+# MATLAB Project Metadata
+LuGre_Sim/resources/project/users/
+
+# Temporary Output (Figures and Other Results)
+tmp-outputs/
+
+# Backup Files
+backups/
+
+# --- FOR Friction-Symbolic-Regression
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# PySR Specific
+hall_of_fame.csv
+hall_of_fame.csv.bkup
+pysr_results.json
+pysr_options.jl
+*.jl
+julia_env/
+
+# VS Code
+.vscode/
+
+# --- Common ---
+# Large Research Data
+*.csv
+*.mat
+*.pkl
+*.log
+
+# OS Specific
+.DS_Store
+Thumbs.db

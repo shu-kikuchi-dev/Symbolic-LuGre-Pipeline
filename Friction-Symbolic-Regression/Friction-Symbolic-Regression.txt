@@ -1,0 +1,1 @@
+This repository will create an extremely light-weight model of friction compared to full LuGre, and keep accuracy since the model is based on LuGre through symbolic regression. We use PySR as a library of symbolic regression.
