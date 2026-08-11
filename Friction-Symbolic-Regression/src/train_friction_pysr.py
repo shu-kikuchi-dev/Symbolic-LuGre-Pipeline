@@ -6,8 +6,8 @@ import pickle
 from  pathlib import Path
 
 # --- MODEL NAMING ---
-version = "v9"
-explanation = "try-more-massive-maxsize-from-20-to-30-to-get-a-term-of-stribeck-effect-without-overfitting"
+version = "v10"
+explanation = "just for a test"
 #target = "F"
 target = "dzdt"
 model_id = "26-08-10_withz_" + version + "_" + target + "_" + explanation
