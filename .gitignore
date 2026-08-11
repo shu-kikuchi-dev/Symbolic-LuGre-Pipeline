@@ -37,6 +37,10 @@ julia_env/
 # VS Code
 .vscode/
 
+# directories
+Friction-Symbolic-Regression/models
+Friction-Symbolic-Regression/src/outputs
+
 # --- Common ---
 # Large Research Data
 *.csv
