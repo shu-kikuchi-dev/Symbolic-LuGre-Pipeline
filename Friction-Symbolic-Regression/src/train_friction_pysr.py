@@ -4,13 +4,15 @@ from pysr import PySRRegressor
 import os
 import pickle
 from  pathlib import Path
+from get_date import get_formatted_date
 
 # --- MODEL NAMING ---
-version = "v10"
-explanation = "just for a test"
-#target = "F"
-target = "dzdt"
-model_id = "26-08-10_withz_" + version + "_" + target + "_" + explanation
+date = get_formatted_date()
+version = "v11"
+explanation = "for-first-model-evaluation-with-v9-and-v10"
+target = "F"
+#target = "dzdt"
+model_id = date + "_withz_" + version + "_" + target + "_" + explanation
 
 # --- SETUP PATHS ---
 # Update below file name when you use a new dataset
@@ -49,14 +51,14 @@ def main():
 
     # We exclude 'Source' so that AI finds a universal law.
     # We use .values to provide raw numpy arrays to the Julia engine.
-    #X = df[['v_norm', 'z_norm', 'dzdt_norm']].values
-    #y = df['F'].values
-    X = df[['v_norm', 'z_norm']].values
-    y = df['dzdt_norm'].values
+    X = df[['v_norm', 'z_norm', 'dzdt_norm']].values
+    y = df['F'].values
+    #X = df[['v_norm', 'z_norm']].values
+    #y = df['dzdt_norm'].values
 
     print(f"Dataset loaded. Size: {X.shape[0]} rows.")
-    #print(f"Features: v, z_norm, dzdt_norm | Target: F")
-    print(f"Features: v_norm, z_norm | Target: dzdt_norm")
+    print(f"Features: v, z_norm, dzdt_norm | Target: F")
+    #print(f"Features: v_norm, z_norm | Target: dzdt_norm")
 
     # --- PYSR REGRESSION CONFIGURATION
     model = PySRRegressor(
