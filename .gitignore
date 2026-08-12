@@ -1,12 +1,45 @@
 # --- FOR LuGre_Sim ---
-# MATLAB Specific
-*.slxc
-slprj/
+# Autosave files
 *.asv
-*.autosave
-*.p
-*.mex*          
+*.autosave         
 *.cache
+*.m~
+*.slx.r*
+*.mdl.r*
+
+# Derived content-obscured files
+*.p
+
+# Compiled MEX files
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Deployable archives
+*.ctf
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Code generation folders
+slprj/
+sccprj/
+codegen/
+
+# Cache files
+*.slxc
+
+# Cloud based storage dotfile
+.MATLABDriveTag
+
+# buildtool cache folder
+.buildtool/
+
+# SimBiology backup files
+*.sbproj.backup
+*.sbproj.bak
 
 # MATLAB Project Metadata
 LuGre_Sim/resources/project/users/
