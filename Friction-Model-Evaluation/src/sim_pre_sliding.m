@@ -4,11 +4,11 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-08-30';    % just a 'date' is built-in function, so better to avoid
 aspect = 'presliding';
-model_code = 'LuGre';
-model_settings = 'ode23tb_maxstepsize-1en4_relativetorelance-1en7_absolutetorelance-1en10';
-input_conditions = 'amplitude-4en6_bias-0_phase-0_omega-40';
+model_code = 'surrogatemodel1';
+model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
+input_conditions = 'amp-4en6_bias-0_ph-0_w-40';
 datafactory_conditions = 'params-paper';
-save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\LuGre';
+save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_1';
 file_name = [date_str, '__', aspect, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
 
 % Create the folder automatically if it doesn't exist
