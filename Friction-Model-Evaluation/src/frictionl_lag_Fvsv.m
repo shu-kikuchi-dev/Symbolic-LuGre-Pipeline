@@ -5,8 +5,8 @@ clear; clc;
 date_str = '26-08-30';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictionallag';
 model_code = 'surrogatemodel1';
-model_settings = 'ode23tb_maxstepsize-1en4_relativetorelance-1en7_absolutetorelance-1en10';
-input_conditions = 'amplitude-1en3_bias-1p5en3_phase-0';
+model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
+input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
 datafactory_conditions = 'params-paper';
 save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_1';
 file_name = [date_str, '__', aspect, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
