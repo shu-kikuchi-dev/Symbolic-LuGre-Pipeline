@@ -2,14 +2,15 @@
 clear; clc;
 
 % --- File Saving Setup ---
-date_str = '26-08-30';    % just a 'date' is built-in function, so better to avoid
+date_str = '26-09-01';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictionallag';
+explanation = 'change-y-lim';
 model_code = 'surrogatemodel1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
 datafactory_conditions = 'params-paper';
 save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_1';
-file_name = [date_str, '__', aspect, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
 
 % Create the folder automatically if it doesn't exist
 if ~exist(save_dir, 'dir')
@@ -67,6 +68,7 @@ legend('show', 'Location', 'best');
 
 % Adjust axes to see the loops clearly
 xlim([0.4e-3, 2.6e-3]);
+ylim([1.0, 1.4]);
 
 hold off;
 
