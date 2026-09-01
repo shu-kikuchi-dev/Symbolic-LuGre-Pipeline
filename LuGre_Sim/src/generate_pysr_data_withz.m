@@ -76,7 +76,7 @@ for m_val = m_list
 end
 
 %% --- Part 2: Direct Velocity (LuGre_Velocity_Model, Source ID: 1, Plot Color: Red) ---
-% Captures: Clean Hysteresis Loops (Pre-sliding & Sliding) and Stribeck Curve.
+% Captures: Clean Hysteresis Loops (Pre-sliding & Sliding).
 omega_list = [0.1 0.5, 1, 10, 25, 50];
 amp_list = [1e-6, 1e-3, 1e-2, 1e-1];
 
