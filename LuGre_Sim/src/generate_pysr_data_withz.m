@@ -142,6 +142,21 @@ keep_blue_bor = blue_bor_pool(round(linspace(1, length(blue_bor_pool), n_blue_bo
 final_idx = sort([keep_red; keep_blue_int; keep_blue_bor]);
 final_table = master_table(final_idx, :);
 
+% --- Calc Density Percentage (Added 2026-09-03) ---
+v_crit_limit = 0.005;
+n_total = size(final_table, 1);
+n_crit = sum(abs(final_table.v) < v_crit_limit);
+pct_crit = (n_crit / n_total) * 100;
+
+fprintf('\n--- Dataset Quality Audit ---\n');
+fprintf('Rows in Critical Zoe (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
+
+if pct_crit < 20
+    waring('Critical Zone density is low! PySR might ignore the Stribeck effect.');
+elseif pct_crit > 30
+    fprintf('Critical Zone density is high. Excellent for Stribeck learning.\n');
+end
+
 % Shuffle for the CSV Export
 csv_path = fullfile(save_csv_dir, [csv_name, '.csv']);
 shuffled_table = final_table(randperm(size(final_table, 1)), :);
@@ -156,6 +171,18 @@ fprintf('   - Total: %d rows', size(final_table, 1));
 fprintf('Saved as: %s.csv\n', csv_name);
 
 %% --- Part 4: Verification Plot ---
+% --- Histogram Visualization (Added 2026-09-03) ---
+figure('Name', 'Velocity Distribution Check');
+histogram(final_table.v, 100); % 100 bins for detail
+hold on;
+% Draw lines for the Critical Zone
+line([v_crit_limit v_clit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+line([-v_crit_limit -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+title('Velocity Distribution (Red lines = Stribeck Zone)');
+xlabel('Velocity v /(m/s)');
+ylabel('Number of Samples');
+
+% --- 3D Visualization ---
 % Initialize Figure
 fig_final = figure('Name', 'Physics-Prioritized Analysis', 'Position', [50, 50, 1600, 500]);
 
