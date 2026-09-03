@@ -156,7 +156,7 @@ n_crit = sum(abs(final_table.v) < v_crit_limit);
 pct_crit = (n_crit / n_total) * 100;
 
 fprintf('\n--- Dataset Quality Audit ---\n');
-fprintf('Rows in Critical Zoe (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
+fprintf('Rows in Critical Zone (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
 
 if pct_crit < 20
     warning('Critical Zone density is low! PySR might ignore the Stribeck effect.');
