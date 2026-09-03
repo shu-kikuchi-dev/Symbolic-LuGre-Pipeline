@@ -190,9 +190,9 @@ xlabel('Velocity v /(m/s)');
 ylabel('Number of Samples');
 grid on;
 % Automatic save for Histogram
-hist_file_name = [csv_name, 'Histogram.pdf'];
+hist_file_name = [csv_name, '_Histogram.pdf'];
 full_hist_path = fullfile(save_fig_dir, hist_file_name);
-exportgraphics(fig_hist, full_hist_path, 'Resplution', 300);
+exportgraphics(fig_hist, full_hist_path, 'Resolution', 300);
 
 fprintf('Histogram saved as: %s\n', hist_file_name);
 
