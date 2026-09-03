@@ -152,7 +152,7 @@ fprintf('\n--- Dataset Quality Audit ---\n');
 fprintf('Rows in Critical Zoe (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
 
 if pct_crit < 20
-    waring('Critical Zone density is low! PySR might ignore the Stribeck effect.');
+    warning('Critical Zone density is low! PySR might ignore the Stribeck effect.');
 elseif pct_crit > 30
     fprintf('Critical Zone density is high. Excellent for Stribeck learning.\n');
 end
@@ -176,7 +176,7 @@ figure('Name', 'Velocity Distribution Check');
 histogram(final_table.v, 100); % 100 bins for detail
 hold on;
 % Draw lines for the Critical Zone
-line([v_crit_limit v_clit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+line([v_crit_limit v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
 line([-v_crit_limit -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
 title('Velocity Distribution (Red lines = Stribeck Zone)');
 xlabel('Velocity v /(m/s)');
