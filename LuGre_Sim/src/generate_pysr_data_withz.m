@@ -124,7 +124,14 @@ idx_B = find(master_table.Source == 0); % Spring Mass
 idx_R = find(master_table.Source == 1); % Velocity
 
 % Sub-Divide Blue Model
-is_int_B = (abs(master_table.v(idx_B)) > 1e-4) | (abs(master_table.dzdt_norm(idx_B)) > 0.1);
+is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v) < 0.01); 
+% this value 0.01 even we set 0.005 before is a kind of safety margin, 
+% and mathematical necessity.
+% To learn a Rational Function (a division like 1/(1 + v^2)), PySR needs to
+% see more than just the "drop". It needs to see the tail of the curve
+% where it becomes perfectly flat. so, this value should vary along with
+% 0.005 we set.
+is_int_B = (abs(master_table.dzdt_norm(idx_B)) > 0.1) | is_stribeck_zone; % former condition captures pre-sliding.
 blue_int_pool = idx_B(is_int_B);
 blue_bor_pool = idx_B(~is_int_B);
 
