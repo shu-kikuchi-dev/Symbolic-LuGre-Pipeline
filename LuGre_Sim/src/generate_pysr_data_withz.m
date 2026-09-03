@@ -179,7 +179,7 @@ fprintf('Saved as: %s.csv\n', csv_name);
 
 %% --- Part 4: Verification Plot ---
 % --- Histogram Visualization (Added 2026-09-03) ---
-figure('Name', 'Velocity Distribution Check');
+fig_hist = figure('Name', 'Velocity Distribution Check');
 histogram(final_table.v, 100); % 100 bins for detail
 hold on;
 % Draw lines for the Critical Zone
@@ -188,6 +188,13 @@ line([-v_crit_limit -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'Line
 title('Velocity Distribution (Red lines = Stribeck Zone)');
 xlabel('Velocity v /(m/s)');
 ylabel('Number of Samples');
+grid on;
+% Automatic save for Histogram
+hist_file_name = [csv_name, 'Histogram.pdf'];
+full_hist_path = fullfile(save_fig_dir, hist_file_name);
+exportgraphics(fig_hist, full_hist_path, 'Resplution', 300);
+
+fprintf('Histogram saved as: %s\n', hist_file_name);
 
 % --- 3D Visualization ---
 % Initialize Figure
