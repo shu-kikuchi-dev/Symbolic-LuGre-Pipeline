@@ -124,7 +124,7 @@ idx_B = find(master_table.Source == 0); % Spring Mass
 idx_R = find(master_table.Source == 1); % Velocity
 
 % Sub-Divide Blue Model
-is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v) < 0.01); 
+is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v(idx_B)) < 0.01); 
 % this value 0.01 even we set 0.005 before is a kind of safety margin, 
 % and mathematical necessity.
 % To learn a Rational Function (a division like 1/(1 + v^2)), PySR needs to
