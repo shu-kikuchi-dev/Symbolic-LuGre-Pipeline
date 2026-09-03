@@ -9,12 +9,12 @@ clearvars; clc; close all;
 % FOR MY DESKTOP save_fig_dir = 'D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\outputs\tmp_figs\MasterData';
 
 % FOR MY LAPTOP
-save_csv_dir = 'C:\Users\shuki\Projects\work\kosen_graduate_study\MATLAB_project\LuGre_Sim\outputs\tmp_csv_files';
+save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\outputs\tmp_csv_files';
 % FOR MY LAPTOP 
-save_fig_dir = 'C:\Users\shuki\Projects\work\kosen_graduate_study\MATLAB_project\LuGre_Sim\outputs\tmp_figs\MasterData';
+save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\outputs\tmp_figs';
 
-csv_name = '26-08-07_script-generatepysrdatawithz_refine-to-have-35-50-15-ratio_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
-fig_name = '26-08-07_script-generatepysrdatawithz_refine-to-have-35-50-15-ratio_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
+csv_name = '26-09-03_script-generatepysrdatawithz_after-big-refine_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
+fig_name = '26-09-03_script-generatepysrdatawithz_after-big-refine_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
 % ====================================================================================
 
 % Model Configurations
