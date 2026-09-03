@@ -143,7 +143,7 @@ final_idx = sort([keep_red; keep_blue_int; keep_blue_bor]);
 final_table = master_table(final_idx, :);
 
 % --- Calc Density Percentage (Added 2026-09-03) ---
-v_crit_limit = 0.005; % Stribeck effect happens between v = 0 to 0.005 with thi data factory.
+v_crit_limit = 0.005; % Stribeck effect happens between v = 0 to 0.005 with this data factory (based on 5 * vs rule).
 n_total = size(final_table, 1);
 n_crit = sum(abs(final_table.v) < v_crit_limit);
 pct_crit = (n_crit / n_total) * 100;
