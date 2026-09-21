@@ -72,6 +72,121 @@ if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 
 printf('--- Starting Master Data Collection ---\n');
 
-%% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model
-micro_amp_list = [];
+%% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model ---
 micro_w_list = [];
+micro_amp_list = [];
+
+for w_val = micro_w_list
+    for amp_val = micro_amp_list
+        w = w_val; amp = amp_val; % Push variables to Workspace
+
+        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % steady state
+        stop_time = max(30, (2*pi/w)*3);
+        fprintf('Simulating Micro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
+
+        simOut = sim(micro_model, 'StopTime', num2str(stop_time));
+
+        ttV = timeseries2timetable(simOut.v_out);
+        ttZ = timeseries2timetable(simOut.z_out);
+        ttDZ = timeseries2timetable(simOut.dzdt_out);
+        ttF = timeseries2timetable(simOut.F_out);
+
+        ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
+
+        v_col = ts{:, 1};
+        z_col = ts{:, 2};
+        dzdt_col = ts{:, 3};
+        F_col = s{:, 4};
+        Source = zeros(size(v_col)); % Source ID: 0
+
+        capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
+            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        master_table = [master_table; capsule];
+    end
+end
+
+%% --- Messo Regime: Stribeck Curve, Friction Growing and Dropping, messo_model ---
+messo_slope_list = [];
+
+for slope_val = messo_slope_list
+    slope = slope_val;
+
+    % Dynamic Stop Time: We will improve this next time.
+    stop_time = (0.01 / slope_val) + 1; % We need to think about how to calculate the stop time within slow ramp input more rigorously.
+    fprintf('Simulating Messo Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
+
+    simOut = sim(messo_model, 'StopTime', num2str(stop_time));
+
+    ttV = timeseries2timetable(simOut.v_out);
+    ttZ = timeseries2timetable(simOut.z_out);
+    ttDZ = timeseries2timetable(simOut.dzdt_out);
+    ttF = timeseries2timetable(simOut.F_out);
+
+    ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
+
+    v_col = ts{:, 1};
+    z_col = ts{:, 2};
+    dzdt_col = ts{:, 3};
+    F_col = s{:, 4};
+    Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
+
+    capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
+        'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+    master_table = [master_table; capsule];
+end
+
+%% --- Macro Regime: Viscous Friction, macro_model ---
+macro_w_list = [];
+macro_amp_list = [];
+
+for w_val = macro_w_list
+    for amp_val = macro_amp_list
+        w = w_val; amp = amp_val; % Push variables to Workspace
+
+        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % steady state
+        stop_time = max(30, (2*pi/w)*3); % We need to think more about this dynamic stop time with this macro level simulation
+        fprintf('Simulating Macro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
+
+        simOut = sim(macro_model, 'StopTime', num2str(stop_time));
+
+        ttV = timeseries2timetable(simOut.v_out);
+        ttZ = timeseries2timetable(simOut.z_out);
+        ttDZ = timeseries2timetable(simOut.dzdt_out);
+        ttF = timeseries2timetable(simOut.F_out);
+
+        ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
+
+        v_col = ts{:, 1};
+        z_col = ts{:, 2};
+        dzdt_col = ts{:, 3};
+        F_col = s{:, 4};
+        Source = twos(size(v_col)); % Source ID: 2
+
+        capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
+            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        master_table = [master_table; capsule];
+    end
+end
+
+%% --- Data Filtering ---
+% We need to think about what kind of filtering is proper for this data.
+% Only excluding the very first few seconds is enough or not.
+
+%% --- Ratio Adjusting ---
+% I think it is ok to just combine those 3 data equally, 33 % for each.
+
+%% --- Verification Plot ---
+% We need to think deeply about how to confirm datasets' reliability and
+% quality. Maybe it will take a form of combination of 3D plotting, 2D
+% histogram plotting, and machine like counting.
+
+% As a conclusion, this program would be much simpler than former ver 1.0.
+% Because the stribeck curve, transient moment detecting filter is not
+% needed.
+
+% And, we have to write the each calculation process down here and make a
+% independent (from my note) document that has written more extended
+% calculation processes, intends of selecting each way and thresholds in
+% this program, or something like that.
