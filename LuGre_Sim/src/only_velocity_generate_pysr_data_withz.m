@@ -44,10 +44,34 @@ LuGre_params = 'params-paper';
 % params-paper: sigma0=1e5, sigma2=0.4, Fc=1.0, Fs=1.5, vs=0.001
 model_settings = 'modelsetting-usual';
 % modelsetting-usual: ode23tb, step-1en4, rel-1en7, abs-1en10
-micro_inputs = 'mi_amp-none_omega-none_time-none';
+micro_inputs = 'mi_amp-none_w-none_time-none';
 messo_inputs = 'me_slope-none_time-none';
-macro_inputs = 'ma_amp-none_omega-none_time-none';
+macro_inputs = 'ma_amp-none_w-none_time-none';
 
 csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.csv'];
 fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.pdf'];
 % ====================================================================================
+
+% Model Configurations
+micro_model = 'LuGre_micro_sinewave';
+messo_model = 'Lugre_messo_slowramp';
+macro_model = 'LuGre_macro_sinewave';
+
+% Constant LuGre Parameters
+sigma0 = 1e5;
+sigma1 = sqrt(sigma0);
+sigma2 = 0.4;
+Fc = 1.0;
+Fs = 1.5;
+vs = 0.001;
+
+master_table = table();
+
+if ~exist(save_csv_dir, 'dir'), mkdir(save_csv_dir); end
+if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
+
+printf('--- Starting Master Data Collection ---\n');
+
+%% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model
+micro_amp_list = [];
+micro_w_list = [];
