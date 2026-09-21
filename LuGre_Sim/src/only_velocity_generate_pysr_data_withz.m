@@ -24,3 +24,30 @@
 % the results is because of our data generation quality or AI settings.
 % Extended stating has written in the lower middle, starts from
 % "Actually, I am trying...", note of 2026-09-18.
+
+clearvars; clc; close all;
+
+% ====================================================================================
+% USER SETTINGS (Directory and Naming)
+% ====================================================================================
+% FOR MY DESKTOP save_csv_dir = 'D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\outputs\tmp_csv_files';
+% FOR MY DESKTOP save_fig_dir = 'D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\outputs\tmp_figs\MasterData';
+
+% FOR MY LAPTOP
+save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_csv_files';
+% FOR MY LAPTOP 
+save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs';
+
+data_str = '26-09-21';
+explanation = 'first-attempt';
+LuGre_params = 'params-paper';
+% params-paper: sigma0=1e5, sigma2=0.4, Fc=1.0, Fs=1.5, vs=0.001
+model_settings = 'modelsetting-usual';
+% modelsetting-usual: ode23tb, step-1en4, rel-1en7, abs-1en10
+micro_inputs = 'mi_amp-none_omega-none_time-none';
+messo_inputs = 'me_slope-none_time-none';
+macro_inputs = 'ma_amp-none_omega-none_time-none';
+
+csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.csv'];
+fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.pdf'];
+% ====================================================================================
