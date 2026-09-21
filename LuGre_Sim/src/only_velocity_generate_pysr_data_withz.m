@@ -70,7 +70,7 @@ master_table = table();
 if ~exist(save_csv_dir, 'dir'), mkdir(save_csv_dir); end
 if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 
-printf('--- Starting Master Data Collection ---\n');
+fprintf('--- Starting Master Data Collection ---\n');
 
 %% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model ---
 micro_w_list = [];
@@ -97,7 +97,7 @@ for w_val = micro_w_list
         v_col = ts{:, 1};
         z_col = ts{:, 2};
         dzdt_col = ts{:, 3};
-        F_col = s{:, 4};
+        F_col = ts{:, 4};
         Source = zeros(size(v_col)); % Source ID: 0
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
@@ -128,7 +128,7 @@ for slope_val = messo_slope_list
     v_col = ts{:, 1};
     z_col = ts{:, 2};
     dzdt_col = ts{:, 3};
-    F_col = s{:, 4};
+    F_col = ts{:, 4};
     Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
 
     capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
@@ -161,8 +161,8 @@ for w_val = macro_w_list
         v_col = ts{:, 1};
         z_col = ts{:, 2};
         dzdt_col = ts{:, 3};
-        F_col = s{:, 4};
-        Source = twos(size(v_col)); % Source ID: 2
+        F_col = ts{:, 4};
+        Source = 2 *ones(size(v_col)); % Source ID: 2
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
             'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
