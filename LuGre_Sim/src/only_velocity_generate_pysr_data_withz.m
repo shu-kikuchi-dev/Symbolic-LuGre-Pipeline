@@ -80,7 +80,7 @@ for w_val = micro_w_list
     for amp_val = micro_amp_list
         w = w_val; amp = amp_val; % Push variables to Workspace
 
-        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % Dynamic Stop Time: Ensure at least 3 full cycles for z to reach
         % steady state
         stop_time = max(30, (2*pi/w)*3);
         fprintf('Simulating Micro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
@@ -112,8 +112,9 @@ messo_slope_list = [];
 for slope_val = messo_slope_list
     slope = slope_val;
 
-    % Dynamic Stop Time: We will improve this next time.
-    stop_time = (0.01 / slope_val) + 1; % We need to think about how to calculate the stop time within slow ramp input more rigorously.
+    % Dynamic Stop Time: set the target value as 0.01 and add margin to
+    % guarantee the data contain complete plateau
+    stop_time = (0.01 / slope_val) + 1;
     fprintf('Simulating Messo Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
 
     simOut = sim(messo_model, 'StopTime', num2str(stop_time));
@@ -144,7 +145,7 @@ for w_val = macro_w_list
     for amp_val = macro_amp_list
         w = w_val; amp = amp_val; % Push variables to Workspace
 
-        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % Dynamic Stop Time: Ensure at least 3 full cycles for z to reach
         % steady state
         stop_time = max(30, (2*pi/w)*3); % We need to think more about this dynamic stop time with this macro level simulation
         fprintf('Simulating Macro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
