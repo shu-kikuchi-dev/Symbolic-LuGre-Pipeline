@@ -25,6 +25,16 @@
 % Extended stating has written in the lower middle, starts from
 % "Actually, I am trying...", note of 2026-09-18.
 
+%% About Data Filtering
+% Only excluding first few seconds of sine waves experiments, and discard
+% very first seconds of meso regime (stribeck happens very quickly)
+% that contain unstable moment because of the MATLAB solver just start their works.
+% We do not have to add any other filters than this, because we completely
+% split up 3 phenomenons we want to see, through experimental conditions.
+% And we do above filtering with inside of the simulation, means we do not
+% establish new program section for filtering. So, we do not store the data
+% that should be discard from the moment of data creation.
+
 clearvars; clc; close all;
 
 % ====================================================================================
@@ -94,15 +104,16 @@ for w_val = micro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-        t_col = seconds(ts.Time); % Extracts time in seconds for the filter
-        v_col = ts{:, 1};
-        z_col = ts{:, 2};
-        dzdt_col = ts{:, 3};
-        F_col = ts{:, 4};
+        t_one_cycle = 2 * pi / w;
+        clean_ts = ts(ts.Time > seconds(t_one_cycle), :);
+        v_col = clean_ts{:, 1};
+        z_col = clean_ts{:, 2};
+        dzdt_col = clean_ts{:, 3};
+        F_col = clean_ts{:, 4};
         Source = zeros(size(v_col)); % Source ID: 0
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
+            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
@@ -127,15 +138,15 @@ for slope_val = meso_slope_list
 
     ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-    t_col = seconds(ts.Time); % Extracts time in seconds for the filter
-    v_col = ts{:, 1};
-    z_col = ts{:, 2};
-    dzdt_col = ts{:, 3};
-    F_col = ts{:, 4};
+    clean_ts = ts(ts.Time > seconds(0.05), :);
+    v_col = clean_ts{:, 1};
+    z_col = clean_ts{:, 2};
+    dzdt_col = clean_ts{:, 3};
+    F_col = clean_ts{:, 4};
     Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
 
     capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-        'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
+        'VariableNames', {v', 'z', 'dzdt', 'F', 'Source'});
     master_table = [master_table; capsule];
 end
 
@@ -161,47 +172,19 @@ for w_val = macro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-        t_col = seconds(ts.Time); % Extracts time in seconds for the filter
-        v_col = ts{:, 1};
-        z_col = ts{:, 2};
-        dzdt_col = ts{:, 3};
-        F_col = ts{:, 4};
+        t_one_cycle = 2 * pi / w;
+        clean_ts = ts(ts.Time > seconds(t_one_cycle), :);
+        v_col = clean_ts{:, 1};
+        z_col = clean_ts{:, 2};
+        dzdt_col = clean_ts{:, 3};
+        F_col = clean_ts{:, 4};
         Source = 2 *ones(size(v_col)); % Source ID: 2
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
+            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
-
-%% --- Data Filtering ---
-% Only excluding first few seconds of sine waves experiments, and discard
-% very first seconds of meso regime (stribeck happens very quickly)
-% that contain unstable moment because of the MATLAB solver just start their works.
-% We do not have to add any other filters than this, because we completely
-% split up 3 phenomenons we want to see, through experimental conditions.
-
-fprintf('\n--- Filtering Startup Transients ---\n');
-
-% Set transient threshold for periodic oscillations
-t_transient_sine = 2.0; % Discard 2 seconds for Sine waves (Micro and Macro)
-t_transient_ramp = 0.05; % Only discard the very first 50 ms of the Ramp (solver startup)
-
-% 1. Micro Regime (Source 0: Sine wave)
-idx_micro = (master_table.Source == 0) & (master_table.t > t_transient_sine);
-% 2. Meso Regime (Source 1: Slow Ramp)
-idx_meso = (master_table.Source == 1) & (master_table.t > t_transient_ramp);
-% 3. Macro Regime (Source 2: Sine wave)
-idx_macro = (master_table.Source == 2) & (master_table.t > t_transient_sine);
-
-% Combine clean data
-clean_idx = idx_micro | idx_meso | idx_macro;
-filtered_table = master_table(clean_idx, :);
-
-fprintf('Filtering Complete:\n');
-fprintf('   - Original Raw Rows: %d\n', height(master_table));
-fprintf('   - Cleaned Rows: %d (%.1f%% retained)\n', ...
-    height(filtered_table), (height(filtered_table)/height(master_table))*100);
 
 %% --- Ratio Adjusting ---
 % I think it is ok to just combine those 3 data equally, 33 % for each.
