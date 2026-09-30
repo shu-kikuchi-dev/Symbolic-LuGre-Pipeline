@@ -45,16 +45,16 @@ LuGre_params = 'params-paper';
 model_settings = 'modelsetting-usual';
 % modelsetting-usual: ode23tb, step-1en4, rel-1en7, abs-1en10
 micro_inputs = 'mi_amp-none_w-none_time-none';
-messo_inputs = 'me_slope-none_time-none';
+meso_inputs = 'me_slope-none_time-none';
 macro_inputs = 'ma_amp-none_w-none_time-none';
 
-csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.csv'];
-fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.pdf'];
+csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.csv'];
+fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.pdf'];
 % ====================================================================================
 
 % Model Configurations
 micro_model = 'LuGre_micro_sinewave';
-messo_model = 'Lugre_messo_slowramp';
+meso_model = 'Lugre_meso_slowramp';
 macro_model = 'LuGre_macro_sinewave';
 
 % Constant LuGre Parameters
@@ -107,18 +107,18 @@ for w_val = micro_w_list
     end
 end
 
-%% --- Messo Regime: Stribeck Curve, Friction Growing and Dropping, messo_model ---
-messo_slope_list = [0.0001, 0.0005, 0.001];
+%% --- meso Regime: Stribeck Curve, Friction Growing and Dropping, meso_model ---
+meso_slope_list = [0.0001, 0.0005, 0.001];
 
-for slope_val = messo_slope_list
+for slope_val = meso_slope_list
     slope = slope_val;
 
     % Dynamic Stop Time: set the target value as 0.01 and add margin to
     % guarantee the data contain complete plateau
     stop_time = (0.01 / slope_val) + 1;
-    fprintf('Simulating Messo Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
+    fprintf('Simulating meso Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
 
-    simOut = sim(messo_model, 'StopTime', num2str(stop_time));
+    simOut = sim(meso_model, 'StopTime', num2str(stop_time));
 
     ttV = timeseries2timetable(simOut.v_out);
     ttZ = timeseries2timetable(simOut.z_out);
@@ -175,11 +175,33 @@ for w_val = macro_w_list
 end
 
 %% --- Data Filtering ---
-% Only excluding first few seconds of sine waves experiments 
-% (not for messo with slow ramp, if we do, we will lose almost whole data) 
+% Only excluding first few seconds of sine waves experiments, and discard
+% very first seconds of meso regime (stribeck happens very quickly)
 % that contain unstable moment because of the MATLAB solver just start their works.
 % We do not have to add any other filters than this, because we completely
 % split up 3 phenomenons we want to see, through experimental conditions.
+
+fprintf('\n--- Filtering Startup Transients ---\n');
+
+% Set transient threshold for periodic oscillations
+t_transient_sine = 2.0; % Discard 2 seconds for Sine waves (Micro and Macro)
+t_transient_ramp = 0.05; % Only discard the very first 50 ms of the Ramp (solver startup)
+
+% 1. Micro Regime (Source 0: Sine wave)
+idx_micro = (master_table.Source == 0) & (master_table.t > t_transient_sine);
+% 2. Meso Regime (Source 1: Slow Ramp)
+idx_meso = (master_table.Source == 1) & (master_table.t > t_transient_ramp);
+% 3. Macro Regime (Source 2: Sine wave)
+idx_macro = (master_table.Source == 2) & (master_table.t > t_transient_sine);
+
+% Combine clean data
+clean_idx = idx_micro | idx_meso | idx_macro;
+filtered_table = master_table(clean_idx, :);
+
+fprintf('Filtering Complete:\n');
+fprintf('   - Original Raw Rows: %d\n', height(master_table));
+fprintf('   - Cleaned Rows: %d (%.1f%% retained)\n', ...
+    height(filtered_table), (height(filtered_table)/height(master_table))*100);
 
 %% --- Ratio Adjusting ---
 % I think it is ok to just combine those 3 data equally, 33 % for each.
