@@ -94,6 +94,7 @@ for w_val = micro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
+        t_col = seconds(ts.Time); % Extracts time in seconds for the filter
         v_col = ts{:, 1};
         z_col = ts{:, 2};
         dzdt_col = ts{:, 3};
@@ -101,7 +102,7 @@ for w_val = micro_w_list
         Source = zeros(size(v_col)); % Source ID: 0
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+            'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
@@ -126,6 +127,7 @@ for slope_val = messo_slope_list
 
     ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
+    t_col = seconds(ts.Time); % Extracts time in seconds for the filter
     v_col = ts{:, 1};
     z_col = ts{:, 2};
     dzdt_col = ts{:, 3};
@@ -133,7 +135,7 @@ for slope_val = messo_slope_list
     Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
 
     capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-        'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
     master_table = [master_table; capsule];
 end
 
@@ -147,7 +149,7 @@ for w_val = macro_w_list
 
         % Dynamic Stop Time: Ensure at least 3 full cycles for z to reach
         % steady state
-        stop_time = max(30, (2*pi/w)*3); % We need to think more about this dynamic stop time with this macro level simulation
+        stop_time = max(30, (2*pi/w)*3);
         fprintf('Simulating Macro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
 
         simOut = sim(macro_model, 'StopTime', num2str(stop_time));
@@ -159,6 +161,7 @@ for w_val = macro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
+        t_col = seconds(ts.Time); % Extracts time in seconds for the filter
         v_col = ts{:, 1};
         z_col = ts{:, 2};
         dzdt_col = ts{:, 3};
@@ -166,14 +169,17 @@ for w_val = macro_w_list
         Source = 2 *ones(size(v_col)); % Source ID: 2
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+            'VariableNames', {'t', 'v', 'z', 'dzdt', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
 
 %% --- Data Filtering ---
-% We need to think about what kind of filtering is proper for this data.
-% Only excluding the very first few seconds is enough or not.
+% Only excluding first few seconds of sine waves experiments 
+% (not for messo with slow ramp, if we do, we will lose almost whole data) 
+% that contain unstable moment because of the MATLAB solver just start their works.
+% We do not have to add any other filters than this, because we completely
+% split up 3 phenomenons we want to see, through experimental conditions.
 
 %% --- Ratio Adjusting ---
 % I think it is ok to just combine those 3 data equally, 33 % for each.
