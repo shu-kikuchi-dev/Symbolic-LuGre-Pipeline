@@ -73,8 +73,8 @@ if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 fprintf('--- Starting Master Data Collection ---\n');
 
 %% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model ---
-micro_w_list = [];
-micro_amp_list = [];
+micro_w_list = [0.1, 0.5, 1, 10, 25, 50];
+micro_amp_list = [1e-6, 1e-3, 1e-2, 1e-1];
 
 for w_val = micro_w_list
     for amp_val = micro_amp_list
@@ -107,7 +107,7 @@ for w_val = micro_w_list
 end
 
 %% --- Messo Regime: Stribeck Curve, Friction Growing and Dropping, messo_model ---
-messo_slope_list = [];
+messo_slope_list = [0.0001, 0.0005, 0.001];
 
 for slope_val = messo_slope_list
     slope = slope_val;
@@ -138,8 +138,8 @@ for slope_val = messo_slope_list
 end
 
 %% --- Macro Regime: Viscous Friction, macro_model ---
-macro_w_list = [];
-macro_amp_list = [];
+macro_w_list = [0.1, 1, 5];
+macro_amp_list = [1, 1.5, 3];
 
 for w_val = macro_w_list
     for amp_val = macro_amp_list
