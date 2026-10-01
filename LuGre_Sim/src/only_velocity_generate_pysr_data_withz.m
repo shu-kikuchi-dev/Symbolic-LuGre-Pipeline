@@ -25,6 +25,16 @@
 % Extended stating has written in the lower middle, starts from
 % "Actually, I am trying...", note of 2026-09-18.
 
+%% About Data Filtering
+% Only excluding first few seconds of sine waves experiments, and discard
+% very first seconds of meso regime (stribeck happens very quickly)
+% that contain unstable moment because of the MATLAB solver just start their works.
+% We do not have to add any other filters than this, because we completely
+% split up 3 phenomenons we want to see, through experimental conditions.
+% And we do above filtering with inside of the simulation, means we do not
+% establish new program section for filtering. So, we do not store the data
+% that should be discard from the moment of data creation.
+
 clearvars; clc; close all;
 
 % ====================================================================================
@@ -45,16 +55,16 @@ LuGre_params = 'params-paper';
 model_settings = 'modelsetting-usual';
 % modelsetting-usual: ode23tb, step-1en4, rel-1en7, abs-1en10
 micro_inputs = 'mi_amp-none_w-none_time-none';
-messo_inputs = 'me_slope-none_time-none';
+meso_inputs = 'me_slope-none_time-none';
 macro_inputs = 'ma_amp-none_w-none_time-none';
 
-csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.csv'];
-fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', messo_inputs, '__', macro_inputs, '.pdf'];
+csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.csv'];
+fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.pdf'];
 % ====================================================================================
 
 % Model Configurations
 micro_model = 'LuGre_micro_sinewave';
-messo_model = 'Lugre_messo_slowramp';
+meso_model = 'Lugre_meso_slowramp';
 macro_model = 'LuGre_macro_sinewave';
 
 % Constant LuGre Parameters
@@ -73,14 +83,14 @@ if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 fprintf('--- Starting Master Data Collection ---\n');
 
 %% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model ---
-micro_w_list = [];
-micro_amp_list = [];
+micro_w_list = [0.1, 0.5, 1, 10, 25, 50];
+micro_amp_list = [1e-6, 1e-3, 1e-2, 1e-1];
 
 for w_val = micro_w_list
     for amp_val = micro_amp_list
         w = w_val; amp = amp_val; % Push variables to Workspace
 
-        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % Dynamic Stop Time: Ensure at least 3 full cycles for z to reach
         % steady state
         stop_time = max(30, (2*pi/w)*3);
         fprintf('Simulating Micro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
@@ -94,10 +104,12 @@ for w_val = micro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-        v_col = ts{:, 1};
-        z_col = ts{:, 2};
-        dzdt_col = ts{:, 3};
-        F_col = ts{:, 4};
+        t_one_cycle = 2 * pi / w;
+        clean_ts = ts(ts.Time > seconds(t_one_cycle), :);
+        v_col = clean_ts{:, 1};
+        z_col = clean_ts{:, 2};
+        dzdt_col = clean_ts{:, 3};
+        F_col = clean_ts{:, 4};
         Source = zeros(size(v_col)); % Source ID: 0
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
@@ -106,17 +118,18 @@ for w_val = micro_w_list
     end
 end
 
-%% --- Messo Regime: Stribeck Curve, Friction Growing and Dropping, messo_model ---
-messo_slope_list = [];
+%% --- meso Regime: Stribeck Curve, Friction Growing and Dropping, meso_model ---
+meso_slope_list = [0.0001, 0.0005, 0.001];
 
-for slope_val = messo_slope_list
+for slope_val = meso_slope_list
     slope = slope_val;
 
-    % Dynamic Stop Time: We will improve this next time.
-    stop_time = (0.01 / slope_val) + 1; % We need to think about how to calculate the stop time within slow ramp input more rigorously.
-    fprintf('Simulating Messo Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
+    % Dynamic Stop Time: set the target value as 0.01 and add margin to
+    % guarantee the data contain complete plateau
+    stop_time = (0.01 / slope_val) + 1;
+    fprintf('Simulating meso Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
 
-    simOut = sim(messo_model, 'StopTime', num2str(stop_time));
+    simOut = sim(meso_model, 'StopTime', num2str(stop_time));
 
     ttV = timeseries2timetable(simOut.v_out);
     ttZ = timeseries2timetable(simOut.z_out);
@@ -125,28 +138,29 @@ for slope_val = messo_slope_list
 
     ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-    v_col = ts{:, 1};
-    z_col = ts{:, 2};
-    dzdt_col = ts{:, 3};
-    F_col = ts{:, 4};
+    clean_ts = ts(ts.Time > seconds(0.05), :);
+    v_col = clean_ts{:, 1};
+    z_col = clean_ts{:, 2};
+    dzdt_col = clean_ts{:, 3};
+    F_col = clean_ts{:, 4};
     Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
 
     capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-        'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        'VariableNames', {v', 'z', 'dzdt', 'F', 'Source'});
     master_table = [master_table; capsule];
 end
 
 %% --- Macro Regime: Viscous Friction, macro_model ---
-macro_w_list = [];
-macro_amp_list = [];
+macro_w_list = [0.1, 1, 5];
+macro_amp_list = [1, 1.5, 3];
 
 for w_val = macro_w_list
     for amp_val = macro_amp_list
         w = w_val; amp = amp_val; % Push variables to Workspace
 
-        % Dynamic Stop Time: Ensure at leat 3 full cycles for z to reach
+        % Dynamic Stop Time: Ensure at least 3 full cycles for z to reach
         % steady state
-        stop_time = max(30, (2*pi/w)*3); % We need to think more about this dynamic stop time with this macro level simulation
+        stop_time = max(30, (2*pi/w)*3);
         fprintf('Simulating Macro Model: w=%.1f, amp=%.2e, Duration=%.1f\n', w, amp, stop_time);
 
         simOut = sim(macro_model, 'StopTime', num2str(stop_time));
@@ -158,10 +172,12 @@ for w_val = macro_w_list
 
         ts = synchronize(ttV, ttZ, ttDZ, ttF, 'regular', 'linear', 'TimeStep', seconds(0.0001));
 
-        v_col = ts{:, 1};
-        z_col = ts{:, 2};
-        dzdt_col = ts{:, 3};
-        F_col = ts{:, 4};
+        t_one_cycle = 2 * pi / w;
+        clean_ts = ts(ts.Time > seconds(t_one_cycle), :);
+        v_col = clean_ts{:, 1};
+        z_col = clean_ts{:, 2};
+        dzdt_col = clean_ts{:, 3};
+        F_col = clean_ts{:, 4};
         Source = 2 *ones(size(v_col)); % Source ID: 2
 
         capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
@@ -169,10 +185,6 @@ for w_val = macro_w_list
         master_table = [master_table; capsule];
     end
 end
-
-%% --- Data Filtering ---
-% We need to think about what kind of filtering is proper for this data.
-% Only excluding the very first few seconds is enough or not.
 
 %% --- Ratio Adjusting ---
 % I think it is ok to just combine those 3 data equally, 33 % for each.
