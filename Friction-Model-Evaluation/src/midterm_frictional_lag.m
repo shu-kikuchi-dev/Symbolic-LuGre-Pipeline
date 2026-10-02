@@ -9,6 +9,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
+explanation = 'Second-attempt-with-single-w';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
@@ -37,15 +38,23 @@ grid on;
 % ===========================
 yyaxis left
 hold on;
+%{
 for i = 1:length(omegas)
     w = omegas(i);
     simOut = sim(model_lugre, 'StopTime', num2str(t_stop));
-
     idx = find(simOut.tout > t_start_plot);
     plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
         'Color', colors{i}, 'LineStyle', '-', 'LineWidth', 1.5, ...
         'DisplayName', sprintf('LuGre (\\omega = %d)', w));
 end
+%}
+w = omegas(3);
+simOut = sim(model_lugre, 'StopTime', num2str(t_stop));
+idx = find(simOut.tout > t_start_plot);
+plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
+    'Color', colors{1}, 'LineStyle', '-', 'LineWidth', 1.5, ...
+    'DisplayName', sprintf('LuGre (\\omega = %d)', w));
+
 ylabel('Friction Force (LuGre) /N');
 ylim([1, 1.4]); % Frictional Force fluctuate range of LuGre
 
@@ -54,6 +63,7 @@ ylim([1, 1.4]); % Frictional Force fluctuate range of LuGre
 % ===========================
 yyaxis right
 hold on;
+%{
 for i = 1:length(omegas)
     w = omegas(i);
     simOut = sim(model_surr, 'StopTime', num2str(t_stop));
@@ -62,6 +72,14 @@ for i = 1:length(omegas)
         'Color', colors{i}, 'LineStyle', '--', 'LineWidth', 1.5, ...
         'DisplayName', sprintf('Surr1 (\\omega = %d)', w));
 end
+%}
+w = omegas(3);
+simOut = sim(model_surr, 'StopTime', num2str(t_stop));
+idx = find(simOut.tout > t_start_plot);
+plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
+    'Color', colors{2}, 'LineStyle', '--', 'LineWidth', 1.5, ...
+    'DisplayName', sprintf('Surr1 (\\omega = %d)', w));
+
 ylabel('Friction Force (Surrogate) /N');
 ylim([1.002, 1.012]); % Frictional Force fluctuate range of Surrogate Modle
 
