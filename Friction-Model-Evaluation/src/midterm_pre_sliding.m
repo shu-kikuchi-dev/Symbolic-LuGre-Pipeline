@@ -11,7 +11,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'First-Attempt';
+explanation = 'add-axis-lims';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-4en6_bias-0_ph-0_w-40';
@@ -30,6 +30,7 @@ model_surr = 'surrogate_pre_sliding_Fvsx';
 t_stop = 10;
 t_start_plot = 3;
 omega = 40;
+period = 2 * pi /omega;
 
 fig = figure('Color', 'w');
 hold on;
@@ -39,7 +40,7 @@ grid on;
 % 1. LuGre (Black Thick Solid Line)
 % ======================================
 simOut_l = sim(model_lugre, 'StopTime', num2str(t_stop));
-idx_l = find(simOut_l.tout > t_start_plot);
+idx_l = find(simOut_l.tout >= t_start_plot & simOut_l.tout <=(t_start_plot + period));
 plot(simOut_l.x_out.Data(idx_l), simOut_l.F_out.Data(idx_l), ...
     'k-', 'LineWidth', 2.0, 'DisplayName', 'LuGre (Truth)');
 
@@ -47,7 +48,7 @@ plot(simOut_l.x_out.Data(idx_l), simOut_l.F_out.Data(idx_l), ...
 % 2. Surrogate Model 1 (Red Dashed Line)
 % =======================================
 simOut_s = sim(model_surr, 'StopTime', num2str(t_stop));
-idx_s = find(simOut_s.tout > t_start_plot);
+idx_s = find(simOut_l.tout >= t_start_plot & simOut_l.tout <=(t_start_plot + period));
 plot(simOut_s.x_out.Data(idx_s), simOut_s.F_out.Data(idx_s), ...
     'r--', 'LineWidth', 1.5, 'DisplayName', 'Surrogate Model');
 
@@ -55,6 +56,8 @@ plot(simOut_s.x_out.Data(idx_s), simOut_s.F_out.Data(idx_s), ...
 xlabel('Displacement x /m');
 ylabel('Friction Force F /n');
 legend('Location', 'northwest');
+xlim([-5e-6, 5e-6]);
+ylim([-0.5, 0.5]);
 
 % Sizing
 set(gca, 'FontSize', 14);
