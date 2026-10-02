@@ -9,7 +9,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'change-name-of-curve';
+explanation = 'wider-tick';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
@@ -37,6 +37,7 @@ grid on;
 % 1. Left side axis: LuGre
 % ===========================
 yyaxis left
+yticks(1.0 : 0.1 : 1.4);
 hold on;
 %{
 for i = 1:length(omegas)
@@ -62,6 +63,7 @@ ylim([1, 1.4]); % Frictional Force fluctuate range of LuGre
 % 2. Right side axis: Surrogate Model 1
 % ===========================
 yyaxis right
+yticks(1.003 : 0.002 : 1.011);
 hold on;
 %{
 for i = 1:length(omegas)
@@ -90,8 +92,9 @@ legend('Location', 'northeast');
 % We better delete above graph title line, since we have add it with Word.
 
 % Sizing
-set(gca, 'FontSize', 14);
+set(gca, 'FontSize', 16);
 set(gca, 'LineWidth', 1.2);
+xticks(0.5e-3 : 0.5e-3 : 2.5e-3);
 box on;
 
 % --- Saving ---
