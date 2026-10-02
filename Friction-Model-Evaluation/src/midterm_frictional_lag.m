@@ -9,7 +9,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'Second-attempt-with-single-w';
+explanation = 'Adjusted-right-ylim';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
@@ -81,7 +81,7 @@ plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
     'DisplayName', sprintf('Surr1 (\\omega = %d)', w));
 
 ylabel('Friction Force (Surrogate) /N');
-ylim([1.002, 1.012]); % Frictional Force fluctuate range of Surrogate Modle
+ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Modle
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');
