@@ -85,7 +85,8 @@ ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Modle
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');
-title('Frictional Lag: F vs v Hysteresis (Dual-Axis Comparison)');
+%title('Frictional Lag: F vs v Hysteresis (Dual-Axis Comparison)');
+% We better delete above graph title line, since we have add it with Word.
 
 % --- Saving ---
 full_save_path = fullfile(save_dir, file_name);
