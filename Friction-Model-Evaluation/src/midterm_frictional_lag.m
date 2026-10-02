@@ -9,7 +9,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'Delete-Title-Adjusted-Font-Line-Size';
+explanation = 'change-name-of-curve';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
@@ -78,13 +78,14 @@ simOut = sim(model_surr, 'StopTime', num2str(t_stop));
 idx = find(simOut.tout > t_start_plot);
 plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
     'Color', colors{2}, 'LineStyle', '--', 'LineWidth', 1.5, ...
-    'DisplayName', sprintf('Surr1 (\\omega = %d)', w));
+    'DisplayName', sprintf('Surrogate Model (\\omega = %d)', w));
 
 ylabel('Friction Force (Surrogate) /N');
 ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Modle
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');
+legend('Location', 'northeast');
 %title('Frictional Lag: F vs v Hysteresis (Dual-Axis Comparison)');
 % We better delete above graph title line, since we have add it with Word.
 

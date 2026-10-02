@@ -11,10 +11,10 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'add-axis-lims';
+explanation = 'omega30';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
-input_conditions = 'amp-4en6_bias-0_ph-0_w-40';
+input_conditions = 'amp-4en6_bias-0_ph-0';
 datafactory_conditions = 'params-paper';
 save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\tmp-outputs\tmp_figs\comparison_for_midterm';
 file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
@@ -29,7 +29,7 @@ model_lugre = 'pre_sliding_Fvsx';
 model_surr = 'surrogate_pre_sliding_Fvsx';
 t_stop = 10;
 t_start_plot = 3;
-omega = 40;
+omega = 30;
 period = 2 * pi /omega;
 
 fig = figure('Color', 'w');
@@ -56,8 +56,10 @@ plot(simOut_s.x_out.Data(idx_s), simOut_s.F_out.Data(idx_s), ...
 xlabel('Displacement x /m');
 ylabel('Friction Force F /n');
 legend('Location', 'northwest');
+%{
 xlim([-5e-6, 5e-6]);
 ylim([-0.5, 0.5]);
+%}
 
 % Sizing
 set(gca, 'FontSize', 14);
