@@ -9,7 +9,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'wider-tick';
+explanation = 'bigger-legend';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
@@ -87,7 +87,7 @@ ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Modle
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');
-legend('Location', 'northeast');
+legend('Location', 'northeast', 'FontSize', 17);
 %title('Frictional Lag: F vs v Hysteresis (Dual-Axis Comparison)');
 % We better delete above graph title line, since we have add it with Word.
 
