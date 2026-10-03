@@ -11,7 +11,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'wider-tick-bigger-legend';
+explanation = 'add-xlim-ylim';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-4en6_bias-0_ph-0';
@@ -56,16 +56,14 @@ plot(simOut_s.x_out.Data(idx_s), simOut_s.F_out.Data(idx_s), ...
 xlabel('Displacement x /m');
 ylabel('Friction Force F /n');
 legend('Location', 'northwest', 'FontSize', 17);
-%{
 xlim([-5e-6, 5e-6]);
 ylim([-0.5, 0.5]);
-%}
 
 % Sizing
 set(gca, 'FontSize', 16);
 set(gca, 'LineWidth', 1.2);
-xticks(-4e-6 : 2e-6 : 4e-6);
-yticks(-0.4 : 0.2 : 0.4);
+xticks(-5e-6 : 2e-6 : 5e-6);
+yticks(-0.5 : 0.2 : 0.5);
 box on;
 
 
