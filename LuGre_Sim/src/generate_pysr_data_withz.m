@@ -13,8 +13,8 @@ save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\t
 % FOR MY LAPTOP 
 save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs';
 
-csv_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver2-plots_ode23tbf_step-1en4_rel-1en7_abs-1en10';
-fig_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver2-plots_ode23tbf_step-1en4_rel-1en7_abs-1en10';
+csv_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver1-plots-second_ode23tbf_step-1en4_rel-1en7_abs-1en10';
+fig_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver1-plots-second_ode23tbf_step-1en4_rel-1en7_abs-1en10';
 % ====================================================================================
 
 % Model Configurations
@@ -123,7 +123,7 @@ n_blue_bor_target = round(target_total * 0.15);
 idx_B = find(master_table.Source == 0); % Spring Mass
 idx_R = find(master_table.Source == 1); % Velocity
 
-
+%{
 % --- Current Ver ---
 % Sub-Divide Blue Model
 is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v(idx_B)) < 0.01); 
@@ -136,13 +136,12 @@ is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v(idx_B)
 is_int_B = (abs(master_table.dzdt_norm(idx_B)) > 0.1) | is_stribeck_zone; % former condition captures pre-sliding.
 blue_int_pool = idx_B(is_int_B);
 blue_bor_pool = idx_B(~is_int_B);
+%}
 
-%{
 % --- Former Ver ---
 is_int_B = (abs(master_table.v(idx_B)) > 1e-4) | (abs(master_table.dzdt_norm(idx_B)) > 0.1);
 blue_int_pool = idx_B(is_int_B);
 blue_bor_pool = idx_B(~is_int_B);
-%}
 
 % Extraction
 fprintf('   - Extracting Red (Velocity) data...\n');
