@@ -13,8 +13,8 @@ save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\t
 % FOR MY LAPTOP 
 save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs';
 
-csv_name = '26-09-03_script-generatepysrdatawithz_after-big-refine_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
-fig_name = '26-09-03_script-generatepysrdatawithz_after-big-refine_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10';
+csv_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver2-plots_ode23tbf_step-1en4_rel-1en7_abs-1en10';
+fig_name = '26-10-06_script-generatepysrdatawithz_for-checking-ver2-plots_ode23tbf_step-1en4_rel-1en7_abs-1en10';
 % ====================================================================================
 
 % Model Configurations
@@ -123,6 +123,8 @@ n_blue_bor_target = round(target_total * 0.15);
 idx_B = find(master_table.Source == 0); % Spring Mass
 idx_R = find(master_table.Source == 1); % Velocity
 
+
+% --- Current Ver ---
 % Sub-Divide Blue Model
 is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v(idx_B)) < 0.01); 
 % this value 0.01 even we set 0.005 before is a kind of safety margin, 
@@ -134,6 +136,13 @@ is_stribeck_zone = (abs(master_table.v(idx_B)) > 0) & (abs(master_table.v(idx_B)
 is_int_B = (abs(master_table.dzdt_norm(idx_B)) > 0.1) | is_stribeck_zone; % former condition captures pre-sliding.
 blue_int_pool = idx_B(is_int_B);
 blue_bor_pool = idx_B(~is_int_B);
+
+%{
+% --- Former Ver ---
+is_int_B = (abs(master_table.v(idx_B)) > 1e-4) | (abs(master_table.dzdt_norm(idx_B)) > 0.1);
+blue_int_pool = idx_B(is_int_B);
+blue_bor_pool = idx_B(~is_int_B);
+%}
 
 % Extraction
 fprintf('   - Extracting Red (Velocity) data...\n');
@@ -150,7 +159,7 @@ final_idx = sort([keep_red; keep_blue_int; keep_blue_bor]);
 final_table = master_table(final_idx, :);
 
 % --- Calc Density Percentage (Added 2026-09-03) ---
-v_crit_limit = 0.005; % Stribeck effect happens between v = 0 to 0.005 with this data factory (based on 5 * vs rule).
+v_crit_limit = 0.01; % changed to 0.01 from 0.005. based on our new condition.
 n_total = size(final_table, 1);
 n_crit = sum(abs(final_table.v) < v_crit_limit);
 pct_crit = (n_crit / n_total) * 100;
