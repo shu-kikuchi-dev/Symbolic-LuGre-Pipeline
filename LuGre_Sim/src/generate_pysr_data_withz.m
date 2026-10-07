@@ -157,20 +157,39 @@ keep_blue_bor = blue_bor_pool(round(linspace(1, length(blue_bor_pool), n_blue_bo
 final_idx = sort([keep_red; keep_blue_int; keep_blue_bor]);
 final_table = master_table(final_idx, :);
 
+% =============================================================================
+%{
+% --- dzdt zero recognition (Added 2026-10-07) ---
+dz_val = final_table.dzdt_norm;
+dzd_threshold = 1e-3;
+is_after_ba = abs(dz_val) < dz_threshold;   % after ba means after breaking-away
+is_presliding = ~is_after_ba;
+%}
+
 % --- Calc Density Percentage (Added 2026-09-03) ---
 v_crit_limit = 0.01; % changed to 0.01 from 0.005. based on our new condition.
 n_total = size(final_table, 1);
-n_crit = sum(abs(final_table.v) < v_crit_limit);
+in_crit = abs(final_table.v) < v_crit_limit;
+n_crit = sum(in_crit);
 pct_crit = (n_crit / n_total) * 100;
 
-fprintf('\n--- Dataset Quality Audit ---\n');
-fprintf('Rows in Critical Zone (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
+%{
+% check stribeck drop or pre-sliding (Added 2026-10-07)
+n_crit_dropping = sum(in_crit & is_after_ba);
+n_crit_presliding = sum(in_crit & is_presliding);
 
-if pct_crit < 20
-    warning('Critical Zone density is low! PySR might ignore the Stribeck effect.');
-elseif pct_crit > 30
-    fprintf('Critical Zone density is high. Excellent for Stribeck learning.\n');
-end
+pct_crit_dropping = (n_crit_dropping / n_total) * 100;
+pct_crit_presliding = (n_crit_presliding / n_total) * 100;
+%}
+
+fprintf('\n======================================\n');
+fprintf('---Dataset Quality & Physics Audit---\n');
+fprintf('Total Rows in Critical Zone (|v| < %.3f): %d (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
+%{
+fprintf('   |--[dz/dt = 0 in stribeck zone (stribeck dropping)] : %d (%.1f%% of total)\n', n_crit_dropping, pct_crit_dropping);
+fprintf('   |--[dz/dt \neq 0 in stribeck zone (pre-sliding)] : %d (%.1f%% of total)\n', n_crit_presliding, pct_crit_presliding);
+%}
+% =============================================================================
 
 % Shuffle for the CSV Export
 csv_path = fullfile(save_csv_dir, [csv_name, '.csv']);
