@@ -7,15 +7,16 @@
 clear; clc;
 
 % --- File Saving Setup ---
-date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
+date_str = '26-10-06';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'bigger-legend';
+explanation = 'refine-unit-n-to-N';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
 datafactory_conditions = 'params-paper';
 save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\tmp-outputs\tmp_figs\comparison_for_midterm';
-file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+%file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+file_name = [date_str, '__', aspect, '__', explanation, '.pdf'];
 
 % Create the folder automatically if it doesn't exist
 if ~exist(save_dir, 'dir')
@@ -54,9 +55,9 @@ simOut = sim(model_lugre, 'StopTime', num2str(t_stop));
 idx = find(simOut.tout > t_start_plot);
 plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
     'Color', colors{1}, 'LineStyle', '-', 'LineWidth', 1.5, ...
-    'DisplayName', sprintf('LuGre (\\omega = %d)', w));
+    'DisplayName', sprintf('LuGre (Truth, \\omega = %d rad/s)', w));
 
-ylabel('Friction Force (LuGre) /N');
+ylabel('Friction Force (LuGre (Truth)) /N');
 ylim([1, 1.4]); % Frictional Force fluctuate range of LuGre
 
 % ===========================
@@ -80,20 +81,20 @@ simOut = sim(model_surr, 'StopTime', num2str(t_stop));
 idx = find(simOut.tout > t_start_plot);
 plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
     'Color', colors{2}, 'LineStyle', '--', 'LineWidth', 1.5, ...
-    'DisplayName', sprintf('Surrogate Model (\\omega = %d)', w));
+    'DisplayName', sprintf('Surrogate Model (\\omega = %d rad/s)', w));
 
 ylabel('Friction Force (Surrogate) /N');
-ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Modle
+ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Model
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');
-legend('Location', 'northeast', 'FontSize', 17);
+legend('Location', 'northeast', 'FontSize', 20);
 %title('Frictional Lag: F vs v Hysteresis (Dual-Axis Comparison)');
 % We better delete above graph title line, since we have add it with Word.
 
 % Sizing
-set(gca, 'FontSize', 16);
-set(gca, 'LineWidth', 1.2);
+set(gca, 'FontSize', 20);
+set(gca, 'LineWidth', 1.7);
 xticks(0.5e-3 : 0.5e-3 : 2.5e-3);
 box on;
 

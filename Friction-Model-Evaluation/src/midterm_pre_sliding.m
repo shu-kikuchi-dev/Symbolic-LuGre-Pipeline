@@ -9,15 +9,16 @@
 clear; clc;
 
 % --- File Saving Setup ---
-date_str = '26-10-02';    % just a 'date' is built-in function, so better to avoid
+date_str = '26-10-06';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'add-xlim-ylim';
+explanation = 'refine unit n to N';
 model_code = 'LuGre-and-Surr1';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-4en6_bias-0_ph-0';
 datafactory_conditions = 'params-paper';
 save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\tmp-outputs\tmp_figs\comparison_for_midterm';
-file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+%file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+file_name = [date_str, '__', aspect, '__', explanation, '.pdf'];
 
 % Create the folder automatically if it doesn't exist
 if ~exist(save_dir, 'dir')
@@ -42,7 +43,7 @@ grid on;
 simOut_l = sim(model_lugre, 'StopTime', num2str(t_stop));
 idx_l = find(simOut_l.tout >= t_start_plot & simOut_l.tout <=(t_start_plot + period));
 plot(simOut_l.x_out.Data(idx_l), simOut_l.F_out.Data(idx_l), ...
-    'k-', 'LineWidth', 2.0, 'DisplayName', 'LuGre (Truth)');
+    'k-', 'LineWidth', 2.0, 'DisplayName', 'LuGre (Truth, ω = 70 rad/s)');
 
 % =======================================
 % 2. Surrogate Model 1 (Red Dashed Line)
@@ -50,18 +51,18 @@ plot(simOut_l.x_out.Data(idx_l), simOut_l.F_out.Data(idx_l), ...
 simOut_s = sim(model_surr, 'StopTime', num2str(t_stop));
 idx_s = find(simOut_l.tout >= t_start_plot & simOut_l.tout <=(t_start_plot + period));
 plot(simOut_s.x_out.Data(idx_s), simOut_s.F_out.Data(idx_s), ...
-    'r--', 'LineWidth', 1.5, 'DisplayName', 'Surrogate Model');
+    'r--', 'LineWidth', 1.5, 'DisplayName', 'Surrogate Model (ω = 70 rad/s)');
 
 % --- Axis Settings ---
 xlabel('Displacement x /m');
-ylabel('Friction Force F /n');
-legend('Location', 'northwest', 'FontSize', 17);
+ylabel('Friction Force F /N');
+legend('Location', 'northwest', 'FontSize', 20);
 xlim([-5e-6, 5e-6]);
 ylim([-0.5, 0.5]);
 
 % Sizing
-set(gca, 'FontSize', 16);
-set(gca, 'LineWidth', 1.2);
+set(gca, 'FontSize', 20);
+set(gca, 'LineWidth', 1.7);
 xticks(-5e-6 : 2e-6 : 5e-6);
 yticks(-0.5 : 0.2 : 0.5);
 box on;
