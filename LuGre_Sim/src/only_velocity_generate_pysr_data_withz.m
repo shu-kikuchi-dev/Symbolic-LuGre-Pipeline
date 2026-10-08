@@ -190,6 +190,13 @@ end
 
 %% --- Ratio Adjusting ---
 % I think it is ok to just combine those 3 data equally, 33 % for each.
+fprintf('Refining data to exactly 200 000 rows...\n');
+
+% Define Target Row Counts
+target_total = 200000;
+n_micro_target = round(target_total * 0.33);
+n_meso_target = round(target_total * 0.33);
+n_macro_target = round(target_total * 0.33);
 
 %% --- Verification Plot ---
 % We need to think deeply about how to confirm datasets' reliability and
