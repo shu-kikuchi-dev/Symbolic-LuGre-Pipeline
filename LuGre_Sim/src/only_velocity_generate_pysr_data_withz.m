@@ -75,6 +75,8 @@ Fc = 1.0;
 Fs = 1.5;
 vs = 0.001;
 
+scale = 1e5;
+
 master_table = table();
 
 if ~exist(save_csv_dir, 'dir'), mkdir(save_csv_dir); end
@@ -112,14 +114,14 @@ for w_val = micro_w_list
         F_col = clean_ts{:, 4};
         Source = zeros(size(v_col)); % Source ID: 0
 
-        capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        capsule = table(v_col*scale, z_col*scale, dzdt_col*scale, F_col, Source, ...
+            'VariableNames', {'v_norm', 'z_norm', 'dzdt_norm', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
 
-%% --- meso Regime: Stribeck Curve, Friction Growing and Dropping, meso_model ---
-meso_slope_list = [0.0001, 0.0005, 0.001];
+%% --- Meso Regime: Stribeck Curve, Friction Growing and Dropping, meso_model ---
+meso_slope_list = [-0.001, -0.0005, -0.0001, 0.0001, 0.0005, 0.001];
 
 for slope_val = meso_slope_list
     slope = slope_val;
@@ -145,13 +147,13 @@ for slope_val = meso_slope_list
     F_col = clean_ts{:, 4};
     Source = ones(size(v_col)); % Source ID: 1                                                                                                  s(size(v_col)); % Source ID: 0
 
-    capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-        'VariableNames', {v', 'z', 'dzdt', 'F', 'Source'});
+    capsule = table(v_col*scale, z_col*scale, dzdt_col*scale, F_col, Source, ...
+        'VariableNames', {'v_norm', 'z_norm', 'dzdt_norm', 'F', 'Source'});
     master_table = [master_table; capsule];
 end
 
 %% --- Macro Regime: Viscous Friction, macro_model ---
-macro_w_list = [0.1, 1, 5];
+macro_w_list = [1, 2, 5];
 macro_amp_list = [1, 1.5, 3];
 
 for w_val = macro_w_list
@@ -180,8 +182,8 @@ for w_val = macro_w_list
         F_col = clean_ts{:, 4};
         Source = 2 *ones(size(v_col)); % Source ID: 2
 
-        capsule = table(v_col, z_col, dzdt_col, F_col, Source, ...
-            'VariableNames', {'v', 'z', 'dzdt', 'F', 'Source'});
+        capsule = table(v_col*scale, z_col*scale, dzdt_col*scale, F_col, Source, ...
+            'VariableNames', {'v_norm', 'z_norm', 'dzdt_norm', 'F', 'Source'});
         master_table = [master_table; capsule];
     end
 end
