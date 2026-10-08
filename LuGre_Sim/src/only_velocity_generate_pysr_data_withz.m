@@ -1,9 +1,9 @@
 %% --- LuGre Master Data Factory (version2.0, 2026-09-21) ---
 % In this program, we will use only direct velocity input models as data
-% generating factory. Previous one, we ve used a Spring-Mass system model
+% generating factory. With previous one, we ve used a Spring-Mass system model
 % in addition to the velocity model simulates pre-sliding, hysteresis.
 % However, that Stick-Slip motion that Spring-Mass system provides is too
-% tricky, chaotic to be treated as data to feed to AI. Because it has
+% tricky, rapid to be treated as data to feed to AI. Because it has
 % a long stacking time and break-way happens almost like impulse function.
 % The extended logic has been explained at the last part of the note in
 % 2026-09-03.
