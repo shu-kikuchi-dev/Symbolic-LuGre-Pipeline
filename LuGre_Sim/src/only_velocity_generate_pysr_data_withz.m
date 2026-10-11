@@ -128,7 +128,7 @@ for slope_val = meso_slope_list
 
     % Dynamic Stop Time: set the target value as 0.01 and add margin to
     % guarantee the data contain complete plateau
-    stop_time = (0.01 / slope_val) + 1;
+    stop_time = (0.01 / abs(slope_val)) + 1;
     fprintf('Simulating meso Model: slope=%.5f, Duration=%.1f\n', slope, stop_time);
 
     simOut = sim(meso_model, 'StopTime', num2str(stop_time));
