@@ -198,6 +198,21 @@ n_micro_target = round(target_total * 0.33);
 n_meso_target = round(target_total * 0.33);
 n_macro_target = round(target_total * 0.33);
 
+% Separate Row Indices
+idx_mi = find(master_table.Source == 0);    % Micro
+idx_me = find(master_table.Source == 1);    % Meso
+idx_ma = find(master_table.Source == 2);    % Macro
+
+% Extraction
+fprintf('   - Extracting data...\n"');
+keep_mi = idx_mi(round(linspace(1, length(idx_mi), n_micro_target)));
+keep_me = idx_me(round(linspace(1, length(idx_me), n_meso_target)));
+keep_ma = idx_ma(round(linspace(1, length(idx_ma), n_macro_target)));
+
+% Combine and sort
+final_idx = sort([keep_mi; keep_me; keep_ma]);
+final_table = master_table(final_idx, :);
+
 %% --- Verification Plot ---
 % We need to think deeply about how to confirm datasets' reliability and
 % quality. Maybe it will take a form of combination of 3D plotting, 2D
