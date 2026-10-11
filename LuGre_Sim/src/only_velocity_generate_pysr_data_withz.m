@@ -85,8 +85,8 @@ if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 fprintf('--- Starting Master Data Collection ---\n');
 
 %% --- Micro Regime: Pre-Sliding, Hysteresis with Sine Waves, micro_model ---
-micro_w_list = [0.1, 0.5, 1, 10, 25, 50];
-micro_amp_list = [1e-6, 1e-3, 1e-2, 1e-1];
+micro_w_list = [10, 25, 50];
+micro_amp_list = [1e-5, 5e-5, 1.5e-4, 3.75e-4];
 
 for w_val = micro_w_list
     for amp_val = micro_amp_list
