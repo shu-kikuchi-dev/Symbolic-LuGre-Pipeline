@@ -204,7 +204,7 @@ idx_me = find(master_table.Source == 1);    % Meso
 idx_ma = find(master_table.Source == 2);    % Macro
 
 % Extraction
-fprintf('   - Extracting data...\n"');
+fprintf('   - Extracting data...\n');
 keep_mi = idx_mi(round(linspace(1, length(idx_mi), n_micro_target)));
 keep_me = idx_me(round(linspace(1, length(idx_me), n_meso_target)));
 keep_ma = idx_ma(round(linspace(1, length(idx_ma), n_macro_target)));
@@ -253,8 +253,8 @@ hold on;
 line([v_crit_limit, v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
 line([-v_crit_limit, -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
 title('Velocity Distribution (Red dashed = STribeck Zone)');
-xlabel('Velocity v /(v/m)');
-ylabel('Sammple Count');
+xlabel('Velocity v /(m/s)');
+ylabel('Sample Count');
 grid on;
 xlim([-0.02, 0.02]); % Zoomed in to verify the Stribeck zone bridge;
 
@@ -283,11 +283,11 @@ title('3-Regime Decoupled State-Space Manifold');
 xlabel('Velocity v /(m/s)');
 ylabel('Normalized State z_{norm}');
 zlabel('Friction Force F /N');
-kegend({'Miscro (Pre-sliding)', 'Meso (Stribeck Ramp)', 'Macro (Viscous Sine)'}, 'Location', 'best');
+legend({'Micro (Pre-sliding)', 'Meso (Stribeck Ramp)', 'Macro (Viscous Sine)'}, 'Location', 'best');
 view(45, 30);
 
 fig3d_name = fullfile(save_fig_dir, [fig_name, '.fig']);
-savefig(fig_final, fig_path);
+savefig(fig_3d, fig3d_name);
 fprintf('Figure saved as: %s.fig\n', fig_name);
 
-fprintf('   --- All prpcesses have finished! ---');
+fprintf('   --- All proccesses have finished! ---');
