@@ -46,7 +46,7 @@ clearvars; clc; close all;
 % FOR MY LAPTOP
 save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_csv_files';
 % FOR MY LAPTOP 
-save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs';
+save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs\26-10-12_only-velocity';
 
 data_str = '26-09-21';
 explanation = 'first-attempt';
@@ -194,9 +194,9 @@ fprintf('Refining data to exactly 200 000 rows...\n');
 
 % Define Target Row Counts
 target_total = 200000;
-n_micro_target = round(target_total * 0.33);
-n_meso_target = round(target_total * 0.33);
-n_macro_target = round(target_total * 0.33);
+n_micro_target = round(target_total / 3);
+n_meso_target = round(target_total / 3);
+n_macro_target = target_total - n_micro_target - n_meso_target;
 
 % Separate Row Indices
 idx_mi = find(master_table.Source == 0);    % Micro
@@ -213,6 +213,25 @@ keep_ma = idx_ma(round(linspace(1, length(idx_ma), n_macro_target)));
 final_idx = sort([keep_mi; keep_me; keep_ma]);
 final_table = master_table(final_idx, :);
 
+%% --- Quality Audit ---
+% Unscale v_norm for auditing.
+v_phys = final_table.v_norm / scale;
+
+v_crit_limit = 0.005; % 5*vs for stribeck zone, 10*vs for a start of complete plateau.
+n_total = size(final_table, 1);
+n_crit = sum(abs(v_phys) < v_crit_limit);
+pct_crit = (n_crit / n_total) * 100;
+
+fprintf('\n--- Dataset Quality Audit ---\n');
+fprintf('Total Dataset Size: %d rows\n', n_total);
+fprintf('Critical Zone (|v| < %.3f m/s): %d rows (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
+
+%% --- CSV Export (Shuffled) ---
+csv_path = fullfile(save_csv_dir, csv_name);
+shuffled_table = final_table(randperm(size(final_table, 1)), :);
+writetable(shuffled_table, csv_path);
+fprintf('Dataset saved successfully as: %s\n', csv_name);
+
 %% --- Verification Plot ---
 % We need to think deeply about how to confirm datasets' reliability and
 % quality. Maybe it will take a form of combination of 3D plotting, 2D
@@ -226,3 +245,19 @@ final_table = master_table(final_idx, :);
 % independent (from my note) document that has written more extended
 % calculation processes, intends of selecting each way and thresholds in
 % this program, or something like that.
+
+% 2D Velocity Distribution Check
+fig_hist = figure('Name', 'Velocity Distribution Check', 'Color', 'w');
+histogram(v_phys, 150);
+hold on;
+line([v_crit_limit, v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+line([-v_crit_limit, -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
+title('Velocity Distribution (Red dashed = STribeck Zone)');
+xlabel('Velocity v /(v/m)');
+ylabel('Sammple Count');
+grid on;
+xlim([-0.02, 0.02]); % Zoomed in to verify the Stribeck zone bridge;
+
+hist_pdf_name = fullfile(save_fig_dir, [data_str, '__Histogram_v2.pdf']);
+exportgraphics(fig_hist, hist_pdf_name, 'Resolution', 300);
+fprintf('Histogram saved as: %s\n', hist_pdf_name);
