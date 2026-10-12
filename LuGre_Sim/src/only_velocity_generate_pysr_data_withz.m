@@ -258,7 +258,7 @@ ylabel('Sample Count');
 grid on;
 xlim([-0.02, 0.02]); % Zoomed in to verify the Stribeck zone bridge;
 
-hist_pdf_name = fullfile(save_fig_dir, [data_str, '__Histogram_v2.pdf']);
+hist_pdf_name = fullfile(save_fig_dir, [fig_name, '__Histogram_v2.pdf']);
 exportgraphics(fig_hist, hist_pdf_name, 'Resolution', 300);
 fprintf('Histogram saved as: %s\n', hist_pdf_name);
 
@@ -290,4 +290,4 @@ fig3d_name = fullfile(save_fig_dir, [fig_name, '.fig']);
 savefig(fig_3d, fig3d_name);
 fprintf('Figure saved as: %s.fig\n', fig_name);
 
-fprintf('   --- All proccesses have finished! ---');
+fprintf('   --- All proccesses have finished! ---\n');
