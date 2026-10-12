@@ -59,7 +59,7 @@ meso_inputs = 'me_slope-none_time-none';
 macro_inputs = 'ma_amp-none_w-none_time-none';
 
 csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.csv'];
-fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.pdf'];
+fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs];
 % ====================================================================================
 
 % Model Configurations
@@ -261,3 +261,33 @@ xlim([-0.02, 0.02]); % Zoomed in to verify the Stribeck zone bridge;
 hist_pdf_name = fullfile(save_fig_dir, [data_str, '__Histogram_v2.pdf']);
 exportgraphics(fig_hist, hist_pdf_name, 'Resolution', 300);
 fprintf('Histogram saved as: %s\n', hist_pdf_name);
+
+% 3D Phase Portrait (F vs v_phys vs z_norm)
+fig_3d = figure('Name', '3-Regime Phase Portrait', 'Color', 'w', 'Position', [100, 100, 900, 700]);
+hold on; grid on;
+
+% Sample 3000 points from each regime for clean plotting
+sample_n = 3000;
+idx_p0 = find(final_table.Source == 0); idx_p0 = idx_p0(randperm(length(idx_p0), sample_n));
+idx_p1 = find(final_table.Source == 1); idx_p1 = idx_p1(randperm(length(idx_p1), sample_n));
+idx_p2 = find(final_table.Source == 2); idx_p2 = idx_p2(randperm(length(idx_p2), sample_n));
+
+% Blue: Micro
+scatter3(v_phys(idx_p0), final_table.z_norm(idx_p0), final_table.F(idx_p0), 6, [0 0.447 0.741], 'filled');
+% Green: Meso (Ramp)
+scatter3(v_phys(idx_p1), final_table.z_norm(idx_p1), final_table.F(idx_p1), 6, [0.466 0.674 0.188], 'filled');
+% Orange: Macro
+scatter3(v_phys(idx_p2), final_table.z_norm(idx_p2), final_table.F(idx_p2), 6, [0.850 0.325 0.098], 'filled');
+
+title('3-Regime Decoupled State-Space Manifold');
+xlabel('Velocity v /(m/s)');
+ylabel('Normalized State z_{norm}');
+zlabel('Friction Force F /N');
+kegend({'Miscro (Pre-sliding)', 'Meso (Stribeck Ramp)', 'Macro (Viscous Sine)'}, 'Location', 'best');
+view(45, 30);
+
+fig3d_name = fullfile(save_fig_dir, [fig_name, '.fig']);
+savefig(fig_final, fig_path);
+fprintf('Figure saved as: %s.fig\n', fig_name);
+
+fprintf('   --- All prpcesses have finished! ---');
