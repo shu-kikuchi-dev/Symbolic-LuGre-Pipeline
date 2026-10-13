@@ -47,7 +47,7 @@ base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Si
 
 script_name = 'only-velocity';
 date_str = '26-10-13';
-explanation = 'histogram-with-many-bins';
+explanation = 'histogram-with-more-many-bins';
 attempt_tag = [date_str, '_', script_name, '_', explanation];
 
 % Create attempt-specific subfolders:
@@ -250,7 +250,7 @@ fprintf('Dataset saved successfully as: %s\n', csv_name);
 % 2D Velocity Distribution Check
 fig_hist = figure('Name', 'Velocity Distribution Check', 'Color', 'w');
 idx_zoom = abs(v_phys) <= 0.02; % Filter to the zoom window before histogramming
-histogram(v_phys(idx_zoom), 100);
+histogram(v_phys(idx_zoom), 200);
 hold on;
 line([v_crit_limit, v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
 line([-v_crit_limit, -v_crit_limit], ylim, 'Color', 'r', 'LineStyle', '--', 'LineWidth', 2);
