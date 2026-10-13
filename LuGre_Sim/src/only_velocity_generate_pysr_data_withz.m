@@ -68,7 +68,7 @@ fig_name = [attempt_tag, '_', LuGre_params, '_', simulink_model_settings];
 
 % Model Configurations
 micro_model = 'LuGre_micro_sinewave';
-meso_model = 'Lugre_meso_slowramp';
+meso_model = 'LuGre_meso_slowramp';
 macro_model = 'LuGre_macro_sinewave';
 
 % Constant LuGre Parameters
