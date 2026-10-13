@@ -46,7 +46,7 @@ base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Si
 %base_output_dir = "D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\tmp-outputs";
 
 script_name = 'only-velocity';
-data_str = '26-10-13';
+date_str = '26-10-13';
 explanation = 'first-attempt';
 attempt_tag = [date_str, '_', script_name, '_', explanation];
 
@@ -62,8 +62,8 @@ LuGre_params = 'params-paper';
 % modelsetting-usual: {solver=ode23b, maxstepsize=1e-4, relativetolerance=1e-7, absolutetolerance=1e-10}
 simulink_model_settings = 'modelsetting-usual';
 
-csv_name = [atempt_tag, '_', LuGre_params, '_', simulink_model_settings, '.csv'];
-fig_name = [atempt_tag, '_', LuGre_params, '_', simulink_model_settings];
+csv_name = [attempt_tag, '_', LuGre_params, '_', simulink_model_settings, '.csv'];
+fig_name = [attempt_tag, '_', LuGre_params, '_', simulink_model_settings];
 % ====================================================================================
 
 % Model Configurations
@@ -82,9 +82,6 @@ vs = 0.001;
 scale = 1e5;
 
 master_table = table();
-
-if ~exist(save_csv_dir, 'dir'), mkdir(save_csv_dir); end
-if ~exist(save_fig_dir, 'dir'), mkdir(save_fig_dir); end
 
 fprintf('--- Starting Master Data Collection ---\n');
 
@@ -297,7 +294,7 @@ fprintf('Figure saved as: %s.fig\n', fig_name);
 %% --- Automatic Experiment Logger (Meta Data) ---
 fprintf('\n--- Generating Automatic Experiment Log ---\n');
 
-log_filename = fullfile(attempt_dir, [attempt_tag, '__experiment_log.txt']);
+log_filename = fullfile(save_dir, [attempt_tag, '__experiment_log.txt']);
 fid = fopen(log_filename, 'w');
 
 if fid ~= -1
