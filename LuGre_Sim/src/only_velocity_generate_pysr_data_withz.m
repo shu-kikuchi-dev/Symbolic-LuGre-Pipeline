@@ -47,7 +47,7 @@ base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Si
 
 script_name = 'only-velocity';
 date_str = '26-10-13';
-explanation = 'histogram-with-more-many-bins';
+explanation = 'fix-simulink-variable-apply-problem';
 attempt_tag = [date_str, '_', script_name, '_', explanation];
 
 % Create attempt-specific subfolders:
