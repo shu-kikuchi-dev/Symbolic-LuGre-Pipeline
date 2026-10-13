@@ -228,7 +228,7 @@ fprintf('Total Dataset Size: %d rows\n', n_total);
 fprintf('Critical Zone (|v| < %.3f m/s): %d rows (%.1f%%)\n', v_crit_limit, n_crit, pct_crit);
 
 %% --- CSV Export (Shuffled) ---
-csv_path = fullfile(save_csv_dir, csv_name);
+csv_path = fullfile(save_dir, csv_name);
 shuffled_table = final_table(randperm(size(final_table, 1)), :);
 writetable(shuffled_table, csv_path);
 fprintf('Dataset saved successfully as: %s\n', csv_name);
@@ -259,7 +259,7 @@ ylabel('Sample Count');
 grid on;
 xlim([-0.02, 0.02]); % Zoomed in to verify the Stribeck zone bridge;
 
-hist_pdf_name = fullfile(save_fig_dir, [fig_name, '__Histogram_v2.pdf']);
+hist_pdf_name = fullfile(save_dir, [fig_name, '__Histogram_v2.pdf']);
 exportgraphics(fig_hist, hist_pdf_name, 'Resolution', 300);
 fprintf('Histogram saved as: %s\n', hist_pdf_name);
 
@@ -287,7 +287,7 @@ zlabel('Friction Force F /N');
 legend({'Micro (Pre-sliding)', 'Meso (Stribeck Ramp)', 'Macro (Viscous Sine)'}, 'Location', 'best');
 view(45, 30);
 
-fig3d_name = fullfile(save_fig_dir, [fig_name, '.fig']);
+fig3d_name = fullfile(save_dir, [fig_name, '.fig']);
 savefig(fig_3d, fig3d_name);
 fprintf('Figure saved as: %s.fig\n', fig_name);
 
@@ -336,7 +336,7 @@ if fid ~= -1
     fprintf(fid, 'Critical Zone Bound : |v| < %.4f m/s (5 * vs)\n', v_crit_limit);
     fprintf(fid, 'Critical Zone Rows  : %d (%.1f%%)\n', n_crit, pct_crit);
     fprintf(fid, '\n------------------- ALL FILES IN THIS DIRECTORY -------------------\n');
-    fprintf(fid, 'Folder Directory    : %s\n', attempt_dir);
+    fprintf(fid, 'Folder Directory    : %s\n', save_dir);
     fprintf(fid, '   - %s\n', csv_name);
     fprintf(fid, '   - %s\n', [attempt_tag, '__Histogram.pdf']);
     fprintf(fid, '   - %s\n', [fig_name, '.fig']);
