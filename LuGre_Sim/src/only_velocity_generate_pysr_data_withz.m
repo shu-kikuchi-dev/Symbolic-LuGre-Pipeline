@@ -40,26 +40,30 @@ clearvars; clc; close all;
 % ====================================================================================
 % USER SETTINGS (Directory and Naming)
 % ====================================================================================
-% FOR MY DESKTOP save_csv_dir = 'D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\outputs\tmp_csv_files';
-% FOR MY DESKTOP save_fig_dir = 'D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\outputs\tmp_figs\MasterData';
+% LAPTOP Output
+base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs";
+% DESKTOP Output
+%base_output_dir = "D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\tmp-outputs";
 
-% FOR MY LAPTOP
-save_csv_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_csv_files';
-% FOR MY LAPTOP 
-save_fig_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\tmp_figs\26-10-12_only-velocity';
-
-data_str = '26-09-21';
+script_name = 'only-velocity';
+data_str = '26-10-13';
 explanation = 'first-attempt';
-LuGre_params = 'params-paper';
-% params-paper: sigma0=1e5, sigma2=0.4, Fc=1.0, Fs=1.5, vs=0.001
-model_settings = 'modelsetting-usual';
-% modelsetting-usual: ode23tb, step-1en4, rel-1en7, abs-1en10
-micro_inputs = 'mi_amp-none_w-none_time-none';
-meso_inputs = 'me_slope-none_time-none';
-macro_inputs = 'ma_amp-none_w-none_time-none';
+attempt_tag = [date_str, '_', script_name, '_', explanation];
 
-csv_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs, '.csv'];
-fig_name = [data_str, '__', explanation, '__', LuGre_params, '__', model_settings, '__', micro_inputs, '__', meso_inputs, '__', macro_inputs];
+% Create attempt-specific subfolders:
+save_dir = fullfile(base_output_dir, attempt_tag);
+
+% Make sure the attempt-specific directory exists
+if ~exist(save_dir, 'dir'), mkdir(save_dir); end
+
+% Logs for the attempt
+% params-paper: {sigma0=1e5, sigma1=sqrt(sigma0), sigma2=0.4, Fc=1.0, Fs=1.5, vs=0.001}
+LuGre_params = 'params-paper';
+% modelsetting-usual: {solver=ode23b, maxstepsize=1e-4, relativetolerance=1e-7, absolutetolerance=1e-10}
+simulink_model_settings = 'modelsetting-usual';
+
+csv_name = [atempt_tag, '_', LuGre_params, '_', simulink_model_settings, '.csv'];
+fig_name = [atempt_tag, '_', LuGre_params, '_', simulink_model_settings];
 % ====================================================================================
 
 % Model Configurations
@@ -289,5 +293,63 @@ view(45, 30);
 fig3d_name = fullfile(save_fig_dir, [fig_name, '.fig']);
 savefig(fig_3d, fig3d_name);
 fprintf('Figure saved as: %s.fig\n', fig_name);
+
+%% --- Automatic Experiment Logger (Meta Data) ---
+fprintf('\n--- Generating Automatic Experiment Log ---\n');
+
+log_filename = fullfile(attempt_dir, [attempt_tag, '__experiment_log.txt']);
+fid = fopen(log_filename, 'w');
+
+if fid ~= -1
+    fprintf(fid, '====================================================================\n');
+    fprintf(fid, '           LUGRE MASTER DATA FACTORY v2.0 - EXPERIMENT LOG           \n');
+    fprintf(fid, '====================================================================\n');
+    fprintf(fid, 'Timestamp           : %s\n', datestr(now, 'yyyy-mm-dd HH:MM:SS'));
+    fprintf(fid, 'Attempt Tag         : %s\n', attempt_tag);
+    fprintf(fid, 'Explanation         : %s\n', explanation);
+    fprintf(fid, '\n------------------- LUGRE MODEL PARAMETERS ------------------------\n');
+    fprintf(fid, 'sigma0 (Stiffness)  : %.2e N/m\n', sigma0);
+    fprintf(fid, 'sigma1 (Damping)    : %.2f N*s/m\n', sigma1);
+    fprintf(fid, 'sigma2 (Viscous)    : %.2f N*s/m\n', sigma2);
+    fprintf(fid, 'Fc (Coulomb)        : %.2f N\n', Fc);
+    fprintf(fid, 'Fs (Static)         : %.2f N\n', Fs);
+    fprintf(fid, 'vs (Stribeck Vel)   : %.4f m/s\n', vs);
+    fprintf(fid, 'Normalization Scale : 1e%.0f (v, z, dzdt multiplied by %.0e)\n', log10(scale), scale);
+    fprintf(fid, '\n------------------- SIMULINK SOLVER SETTINGS ----------------------\n');
+    fprintf(fid, 'Solver              : ode23tb (stiff)\n');
+    fprintf(fid, 'Max Step Size       : 1e-4 s\n');
+    fprintf(fid, 'Relative Tolerance  : 1e-7\n');
+    fprintf(fid, 'Absolute Tolerance  : 1e-10\n');
+    fprintf(fid, 'Sync Step (Grid)    : 0.1 ms (1e-4 s)\n');
+    fprintf(fid, '\n------------------- EXPERIMENTAL CONDITIONS -----------------------\n');
+    fprintf(fid, 'Micro Model         : %s\n', micro_model);
+    fprintf(fid, '   w_list [rad/s]   : %s\n', mat2str(micro_w_list));
+    fprintf(fid, '   amp_list [m/s]   : %s\n', mat2str(micro_amp_list));
+    fprintf(fid, 'Meso Model          : %s\n', meso_model);
+    fprintf(fid, '   slope_list [m/s2]: %s\n', mat2str(meso_slope_list));
+    fprintf(fid, '   target v plateau : 0.01 m/s\n');
+    fprintf(fid, 'Macro Model         : %s\n', macro_model);
+    fprintf(fid, '   w_list [rad/s]   : %s\n', mat2str(macro_w_list));
+    fprintf(fid, '   amp_list [m/s]   : %s\n', mat2str(macro_amp_list));
+    fprintf(fid, '\n------------------- DATASET COMPOSITION & AUDIT --------------------\n');
+    fprintf(fid, 'Target Total Rows   : %d\n', target_total);
+    fprintf(fid, 'Micro Kept Rows     : %d (%.1f%%)\n', length(keep_mi), (length(keep_mi)/target_total)*100);
+    fprintf(fid, 'Meso Kept Rows      : %d (%.1f%%)\n', length(keep_me), (length(keep_me)/target_total)*100);
+    fprintf(fid, 'Macro Kept Rows     : %d (%.1f%%)\n', length(keep_ma), (length(keep_ma)/target_total)*100);
+    fprintf(fid, 'Critical Zone Bound : |v| < %.4f m/s (5 * vs)\n', v_crit_limit);
+    fprintf(fid, 'Critical Zone Rows  : %d (%.1f%%)\n', n_crit, pct_crit);
+    fprintf(fid, '\n------------------- ALL FILES IN THIS DIRECTORY -------------------\n');
+    fprintf(fid, 'Folder Directory    : %s\n', attempt_dir);
+    fprintf(fid, '   - %s\n', csv_name);
+    fprintf(fid, '   - %s\n', [attempt_tag, '__Histogram.pdf']);
+    fprintf(fid, '   - %s\n', [fig_name, '.fig']);
+    fprintf(fid, '   - %s\n', [attempt_tag, '__experiment_log.txt']);
+    fprintf(fid, '====================================================================\n');
+    fclose(fid);
+
+    fprintf('Experiment log saved to:\n   -> %s\n', log_filename);
+else
+    warning('Could not create experiment log file.');
+end
 
 fprintf('   --- All proccesses have finished! ---\n');
