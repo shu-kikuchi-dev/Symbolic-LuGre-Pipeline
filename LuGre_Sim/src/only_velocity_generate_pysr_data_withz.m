@@ -45,9 +45,9 @@ base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Si
 % DESKTOP Output
 %base_output_dir = "D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\tmp-outputs";
 
-date_str = '26-10-14';
-explanation = 'test-new-dir-structure';
-attempt_tag = [date_str, '_', explanation];
+explanation = 'test-datestr-function';
+time_str = char(datetime('now', 'Format', 'yyyy-MM-dd_HH-mm-ss'));
+attempt_tag = [time_str, '_', explanation];
 
 % Create attempt-specific subfolders:
 save_dir = fullfile(base_output_dir, attempt_tag);
@@ -301,7 +301,7 @@ if fid ~= -1
     fprintf(fid, '====================================================================\n');
     fprintf(fid, '           LUGRE MASTER DATA FACTORY v2.0 - EXPERIMENT LOG           \n');
     fprintf(fid, '====================================================================\n');
-    fprintf(fid, 'Timestamp           : %s\n', datestr(now, 'yyyy-mm-dd HH:MM:SS'));
+    fprintf(fid, 'Timestamp           : %s\n', time_str);
     fprintf(fid, 'Attempt Tag         : %s\n', attempt_tag);
     fprintf(fid, 'Explanation         : %s\n', explanation);
     fprintf(fid, '\n------------------- LUGRE MODEL PARAMETERS ------------------------\n');
