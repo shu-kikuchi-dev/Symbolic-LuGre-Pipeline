@@ -8,16 +8,16 @@ from get_date import get_formatted_date
 
 # --- MODEL NAMING ---
 date = get_formatted_date()
-version = "v11"
-explanation = "for-first-model-evaluation-with-v9-and-v10"
+version = "v12"
+explanation = "first-attempt-of-only-velocity"
 target = "F"
 #target = "dzdt"
 model_id = date + "_withz_" + version + "_" + target + "_" + explanation
 
 # --- SETUP PATHS ---
 # Update below file name when you use a new dataset
-dataset_csv_name = "26-08-10_script-generatepysrdatawithz_refine-to-have-35-50-15-ratio_ode23tbf_maxstepsize-1en4_relativetolerance-1en7_absolutetolerance-1en10.csv"
-DATA_PATH = os.path.join("..", "..", "LuGre_Sim", "outputs", "csv_files", "datasets-withz", dataset_csv_name)
+dataset_csv_name = "26-10-13_only-velocity_fix-simulink-variable-apply-problem_params-paper_modelsetting-usual.csv"
+DATA_PATH = os.path.join("..", "..", "LuGre_Sim", "outputs", "26-10-13_only-velocity_fix-simulink-variable-apply-problem", dataset_csv_name)
 MODEL_DIR = "../models/"
 CONFIG_DIR = "../models/configs/"
 os.makedirs(MODEL_DIR, exist_ok=True)
@@ -44,9 +44,9 @@ def main():
         df = pd.read_csv(DATA_PATH)
 
         # Apply the discovery scale to velocity
-        df['v_norm'] = df['v'] * 1e5
+        #df['v_norm'] = df['v'] * 1e5
     except FileNotFoundError:
-        print("Error: CV file not found. Check your DATA_PATH.")
+        print("Error: CSV file not found. Check your DATA_PATH.")
         return
 
     # We exclude 'Source' so that AI finds a universal law.
@@ -63,16 +63,16 @@ def main():
     # --- PYSR REGRESSION CONFIGURATION
     model = PySRRegressor(
         niterations=1000,         # Low number for the first test run
-        binary_operators=["+", "-", "*", "/"],
+        binary_operators=["+", "-", "*", "abs"],
         unary_operators=[
             #"exp",              # Essential for Stribeck Effect
             "abs",              # Essential for Symmetry/Direction
             "square",           # Helps with the (v/vs)^2 term
         ],
         # We penalize complex equations to keep them lightweight.
-        maxsize=30,             # Max tokens in the formula (admittable complexity)
+        maxsize=16,             # Max tokens in the formula (admittable complexity)
         #complexity_of_operators={"exp": 3, "abs": 2},   # Make exp more expensive
-        complexity_of_operators={"abs": 2},   # Exclude exp
+        complexity_of_operators={"/": 4, "square": 2},   # Exclude exp
 
         model_selection="best", # Automatically pick the best accuracy/complexity balance
         batching=True,          # Required for 200 000 rows to avoid RAM lag
