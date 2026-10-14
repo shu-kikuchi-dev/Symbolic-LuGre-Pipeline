@@ -90,7 +90,9 @@ def main():
         batch_size=2000,
 
         # --- Loss and Selection ---
-        loss="loss(prediction, target) = (prediction - target)^2",
+        # relative error way, see 10-02 note for the logic
+        # by adding 1 to the denominator, we avoid division by zero (we have dzdt=0 poit at break-away)
+        loss="loss(prediction, target) = ((prediction - target) / (abs(target) + 1.0))^2",
         parsimony=0.001,
         random_state=42        # For reproducibility
     )
