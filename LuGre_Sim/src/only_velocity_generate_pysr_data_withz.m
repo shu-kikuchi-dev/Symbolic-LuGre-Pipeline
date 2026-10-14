@@ -41,14 +41,13 @@ clearvars; clc; close all;
 % USER SETTINGS (Directory and Naming)
 % ====================================================================================
 % LAPTOP Output
-base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs";
+base_output_dir = "C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\only_velocity_generator";
 % DESKTOP Output
 %base_output_dir = "D:\shu-kikuchi-projects\MATLAB_project\LuGre_Sim\tmp-outputs";
 
-script_name = 'only-velocity';
-date_str = '26-10-13';
-explanation = 'fix-simulink-variable-apply-problem';
-attempt_tag = [date_str, '_', script_name, '_', explanation];
+date_str = '26-10-14';
+explanation = 'test-new-dir-structure';
+attempt_tag = [date_str, '_', explanation];
 
 % Create attempt-specific subfolders:
 save_dir = fullfile(base_output_dir, attempt_tag);

@@ -1,0 +1,49 @@
+====================================================================
+           LUGRE MASTER DATA FACTORY v2.0 - EXPERIMENT LOG           
+====================================================================
+Timestamp           : 2026-10-13 22:02:55
+Attempt Tag         : 26-10-13_only-velocity_fix-simulink-variable-apply-problem
+Explanation         : fix-simulink-variable-apply-problem
+
+------------------- LUGRE MODEL PARAMETERS ------------------------
+sigma0 (Stiffness)  : 1.00e+05 N/m
+sigma1 (Damping)    : 316.23 N*s/m
+sigma2 (Viscous)    : 0.40 N*s/m
+Fc (Coulomb)        : 1.00 N
+Fs (Static)         : 1.50 N
+vs (Stribeck Vel)   : 0.0010 m/s
+Normalization Scale : 1e5 (v, z, dzdt multiplied by 1e+05)
+
+------------------- SIMULINK SOLVER SETTINGS ----------------------
+Solver              : ode23tb (stiff)
+Max Step Size       : 1e-4 s
+Relative Tolerance  : 1e-7
+Absolute Tolerance  : 1e-10
+Sync Step (Grid)    : 0.1 ms (1e-4 s)
+
+------------------- EXPERIMENTAL CONDITIONS -----------------------
+Micro Model         : LuGre_micro_sinewave
+   w_list [rad/s]   : [10 25 50]
+   amp_list [m/s]   : [1e-05 5e-05 0.00015 0.000375]
+Meso Model          : LuGre_meso_slowramp
+   slope_list [m/s2]: [-0.001 -0.0005 -0.0001 0.0001 0.0005 0.001]
+   target v plateau : 0.01 m/s
+Macro Model         : LuGre_macro_sinewave
+   w_list [rad/s]   : [1 2 5]
+   amp_list [m/s]   : [1 1.5 3]
+
+------------------- DATASET COMPOSITION & AUDIT --------------------
+Target Total Rows   : 200000
+Micro Kept Rows     : 66667 (33.3%)
+Meso Kept Rows      : 66667 (33.3%)
+Macro Kept Rows     : 66666 (33.3%)
+Critical Zone Bound : |v| < 0.0050 m/s (5 * vs)
+Critical Zone Rows  : 88156 (44.1%)
+
+------------------- ALL FILES IN THIS DIRECTORY -------------------
+Folder Directory    : C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\LuGre_Sim\tmp-outputs\26-10-13_only-velocity_fix-simulink-variable-apply-problem
+   - 26-10-13_only-velocity_fix-simulink-variable-apply-problem_params-paper_modelsetting-usual.csv
+   - 26-10-13_only-velocity_fix-simulink-variable-apply-problem__Histogram.pdf
+   - 26-10-13_only-velocity_fix-simulink-variable-apply-problem_params-paper_modelsetting-usual.fig
+   - 26-10-13_only-velocity_fix-simulink-variable-apply-problem__experiment_log.txt
+====================================================================
