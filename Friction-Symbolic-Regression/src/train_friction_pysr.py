@@ -10,8 +10,8 @@ from get_date import get_formatted_date
 date = get_formatted_date()
 version = "v12"
 explanation = "first-attempt-of-only-velocity"
-target = "F"
-#target = "dzdt"
+#target = "F"
+target = "dzdt"
 model_id = date + "_withz_" + version + "_" + target + "_" + explanation
 
 # --- SETUP PATHS ---
@@ -43,44 +43,56 @@ def main():
         # Load the data
         df = pd.read_csv(DATA_PATH)
 
-        # Apply the discovery scale to velocity
-        #df['v_norm'] = df['v'] * 1e5
     except FileNotFoundError:
         print("Error: CSV file not found. Check your DATA_PATH.")
         return
 
     # We exclude 'Source' so that AI finds a universal law.
     # We use .values to provide raw numpy arrays to the Julia engine.
-    X = df[['v_norm', 'z_norm', 'dzdt_norm']].values
-    y = df['F'].values
-    #X = df[['v_norm', 'z_norm']].values
-    #y = df['dzdt_norm'].values
+    #X = df[['v_norm', 'z_norm', 'dzdt_norm']].values
+    #y = df['F'].values
+    X = df[['v_norm', 'z_norm']].values
+    y = df['dzdt_norm'].values
 
     print(f"Dataset loaded. Size: {X.shape[0]} rows.")
-    print(f"Features: v, z_norm, dzdt_norm | Target: F")
-    #print(f"Features: v_norm, z_norm | Target: dzdt_norm")
+    #print(f"Features: v, z_norm, dzdt_norm | Target: F")
+    print(f"Features: v_norm, z_norm | Target: dzdt_norm")
 
     # --- PYSR REGRESSION CONFIGURATION
     model = PySRRegressor(
-        niterations=1000,         # Low number for the first test run
-        binary_operators=["+", "-", "*", "abs"],
-        unary_operators=[
-            #"exp",              # Essential for Stribeck Effect
-            "abs",              # Essential for Symmetry/Direction
-            "square",           # Helps with the (v/vs)^2 term
-        ],
-        # We penalize complex equations to keep them lightweight.
-        maxsize=16,             # Max tokens in the formula (admittable complexity)
-        #complexity_of_operators={"exp": 3, "abs": 2},   # Make exp more expensive
-        complexity_of_operators={"/": 4, "square": 2},   # Exclude exp
+        # --- Population and Iteration ---
+        niterations=200,
+        populations=20,
+        population_size=50,
 
-        model_selection="best", # Automatically pick the best accuracy/complexity balance
-        batching=True,          # Required for 200 000 rows to avoid RAM lag
-        batch_size=1024,        # Check 1024 rows at a time
+        # --- Allowed Operators ---
+        binary_operators=["+", "-", "*", "/"],
+        unary_operators=["abs"],
 
-        procs=4,                # Use 4 CPU cores
-        multithreading=True,
-        timeout_in_seconds=600  # Stop after 10 minuites for this first test
+        # --- Operator Costs ---          
+        complexity_of_operators={
+            "+": 1,
+            "-": 1,
+            "*": 1,
+            "/": 3,
+            "abs": 1
+        },
+
+        # --- Structural Constrains ---
+        maxsize=16,
+        nested_constraints={
+            "/": {"/": 0},
+            "abs": {"abs": 0},
+        },
+
+        # --- Data Performance ---
+        batching=True,
+        batch_size=2000,
+
+        # --- Loss and Selection ---
+        loss="loss(prediction, target) = (prediction - target)^2",
+        parsimony=0.001,
+        random_state=42        # For reproducibility
     )
 
     # --- START THE EVOLUTION ---
@@ -92,7 +104,7 @@ def main():
     # --- OUTPUT RESULTS ---
     print("\n --- Discovery Complete ---")
     print("Best Equation Found:")
-    print(model.get_best())
+    print(model.sympy())
 
     # Save the model
     with open(os.path.join(MODEL_DIR, f"{model_id}.pkl"), "wb") as f:
