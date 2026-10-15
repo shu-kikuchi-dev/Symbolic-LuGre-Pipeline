@@ -3,7 +3,7 @@ import os
 from pysr import PySRRegressor
 
 # Target model name
-model_name = "26-10-14-PM-12-49_withz_v12_dzdt_first-attempt-of-only-velocity.pkl"
+model_name = "26-10-15-AM-09-35_withz_v13_dzdt_target-v-dzdt.pkl"
 
 # PATH for a model
 model_path = "../models/" + model_name

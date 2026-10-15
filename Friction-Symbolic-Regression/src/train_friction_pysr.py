@@ -8,8 +8,8 @@ from get_date import get_formatted_date
 
 # --- MODEL NAMING ---
 date = get_formatted_date()
-version = "v12"
-explanation = "first-attempt-of-only-velocity"
+version = "v13"
+explanation = "target-v-dzdt"
 #target = "F"
 target = "dzdt"
 model_id = date + "_withz_" + version + "_" + target + "_" + explanation
@@ -51,12 +51,15 @@ def main():
     # We use .values to provide raw numpy arrays to the Julia engine.
     #X = df[['v_norm', 'z_norm', 'dzdt_norm']].values
     #y = df['F'].values
+    #X = df[['v_norm', 'z_norm']].values
+    #y = df['dzdt_norm'].values
     X = df[['v_norm', 'z_norm']].values
-    y = df['dzdt_norm'].values
+    y = (df['v_norm'] - df['dzdt_norm']).values
 
     print(f"Dataset loaded. Size: {X.shape[0]} rows.")
     #print(f"Features: v, z_norm, dzdt_norm | Target: F")
-    print(f"Features: v_norm, z_norm | Target: dzdt_norm")
+    #print(f"Features: v_norm, z_norm | Target: dzdt_norm")
+    print(f"Features: v_norm, z_norm | Target: v_norm - dzdt_norm")
 
     # --- PYSR REGRESSION CONFIGURATION
     model = PySRRegressor(
@@ -99,7 +102,7 @@ def main():
 
     # --- START THE EVOLUTION ---
     print("\n --- Starting PySR Evolution ---")
-    print("PySR will now search for an algebraic formula F = f(v, z, dzdt)")
+    #print("PySR will now search for an algebraic formula F = f(v, z, dzdt)")
 
     model.fit(X, y)
 
