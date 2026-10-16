@@ -9,12 +9,12 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-16';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
-explanation = 'first-attempt-with-sur9';
-model_code = 'LuGre-and-Surr9';
+explanation = 'remove-right-axis-lim-changeticks';
+model_code = 'LuGre-and-Surr14';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
 datafactory_conditions = 'params-paper';
-save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_9';
+save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_14';
 %file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
 file_name = [date_str, '__', aspect, '__', explanation, '.pdf'];
 
@@ -64,7 +64,8 @@ ylim([1, 1.4]); % Frictional Force fluctuate range of LuGre
 % 2. Right side axis: Surrogate Model 1
 % ===========================
 yyaxis right
-yticks(1.003 : 0.002 : 1.011);
+%yticks(1.003 : 0.002 : 1.011);
+yticks(1.0 : 0.1 : 1.4);
 hold on;
 %{
 for i = 1:length(omegas)
@@ -84,7 +85,8 @@ plot(simOut.v_out.Data(idx), simOut.F_out.Data(idx), ...
     'DisplayName', sprintf('Surrogate Model (\\omega = %d rad/s)', w));
 
 ylabel('Friction Force (Surrogate) /N');
-ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Model
+%ylim([1.003, 1.011]); % Frictional Force fluctuate range of Surrogate Model
+ylim([1, 1.4]);
 
 % --- Common Configurations ---
 xlabel('Velocity /(m/s)');

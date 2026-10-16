@@ -8,8 +8,8 @@ from get_date import get_formatted_date
 
 # --- MODEL NAMING ---
 date = get_formatted_date()
-version = "v13"
-explanation = "target-v-dzdt"
+version = "v15"
+explanation = "relax-penalty-division-to-1"
 #target = "F"
 target = "dzdt"
 model_id = date + "_withz_" + version + "_" + target + "_" + explanation
@@ -77,12 +77,12 @@ def main():
             "+": 1,
             "-": 1,
             "*": 1,
-            "/": 3,
+            "/": 1,
             "abs": 1
         },
 
         # --- Structural Constrains ---
-        maxsize=16,
+        maxsize=20,
         nested_constraints={
             "/": {"/": 0},
             "abs": {"abs": 0},
