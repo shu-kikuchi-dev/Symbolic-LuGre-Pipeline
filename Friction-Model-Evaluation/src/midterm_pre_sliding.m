@@ -11,7 +11,7 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-16';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'first-attempt-with-sur9';
+explanation = 'w10';
 model_code = 'LuGre-and-Surr9';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-4en6_bias-0_ph-0';
@@ -30,7 +30,7 @@ model_lugre = 'pre_sliding_Fvsx';
 model_surr = 'surrogate_pre_sliding_Fvsx';
 t_stop = 10;
 t_start_plot = 3;
-omega = 70;
+omega = 10;
 period = 2 * pi /omega;
 
 fig = figure('Color', 'w');
