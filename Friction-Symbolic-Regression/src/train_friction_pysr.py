@@ -8,8 +8,8 @@ from get_date import get_formatted_date
 
 # --- MODEL NAMING ---
 date = get_formatted_date()
-version = "v15"
-explanation = "relax-penalty-division-to-1"
+version = "v16"
+explanation = "more-smooth-loss-function"
 #target = "F"
 target = "dzdt"
 model_id = date + "_withz_" + version + "_" + target + "_" + explanation
@@ -95,7 +95,7 @@ def main():
         # --- Loss and Selection ---
         # relative error way, see 10-02 note for the logic
         # by adding 1 to the denominator, we avoid division by zero (we have dzdt=0 poit at break-away)
-        loss="loss(prediction, target) = ((prediction - target) / (abs(target) + 1.0))^2",
+        loss="loss(prediction, target) = ((prediction - target) / (abs(target) + 0.1))^2",
         parsimony=0.001,
         random_state=42        # For reproducibility
     )

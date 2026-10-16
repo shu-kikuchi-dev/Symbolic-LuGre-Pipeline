@@ -4,13 +4,14 @@ clear; clc;
 % --- File Saving Setup ---
 date_str = '26-10-16';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictionallag';
-explanation = 'first-attempt-with-sur14';
-model_code = 'surrogatemodel14';
+explanation = 'first-attempt-with-sur16';
+model_code = 'surrogatemodel16';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-1en3_bias-1p5en3_ph-0';
 datafactory_conditions = 'params-paper';
-save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_14';
-file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_16';
+%file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
+file_name = [date_str, '__', aspect, '__', explanation, '.pdf'];
 
 % Create the folder automatically if it doesn't exist
 if ~exist(save_dir, 'dir')
