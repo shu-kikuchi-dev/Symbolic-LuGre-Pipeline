@@ -7,7 +7,7 @@
 clear; clc;
 
 % --- File Saving Setup ---
-date_str = '26-10-06';    % just a 'date' is built-in function, so better to avoid
+date_str = '26-10-16';    % just a 'date' is built-in function, so better to avoid
 aspect = 'frictional-lag';
 explanation = 'first-attempt-with-sur9';
 model_code = 'LuGre-and-Surr9';

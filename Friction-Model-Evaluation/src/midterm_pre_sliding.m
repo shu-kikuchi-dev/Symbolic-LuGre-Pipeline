@@ -9,14 +9,14 @@
 clear; clc;
 
 % --- File Saving Setup ---
-date_str = '26-10-06';    % just a 'date' is built-in function, so better to avoid
+date_str = '26-10-16';    % just a 'date' is built-in function, so better to avoid
 aspect = 'pre-sliding';
-explanation = 'refine unit n to N';
-model_code = 'LuGre-and-Surr1';
+explanation = 'first-attempt-with-sur9';
+model_code = 'LuGre-and-Surr9';
 model_settings = 'ode23tb_step-1en4_rel-1en7_abs-1en10';
 input_conditions = 'amp-4en6_bias-0_ph-0';
 datafactory_conditions = 'params-paper';
-save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\tmp-outputs\tmp_figs\comparison_for_midterm';
+save_dir = 'C:\Users\shuki\Projects\work\Symbolic-LuGre-Pipeline\Friction-Model-Evaluation\outputs\figs\surrogate_model_9';
 %file_name = [date_str, '__', aspect, '__', explanation, '__', model_code, '__', model_settings, '__', input_conditions, '__', datafactory_conditions, '.pdf'];
 file_name = [date_str, '__', aspect, '__', explanation, '.pdf'];
 
