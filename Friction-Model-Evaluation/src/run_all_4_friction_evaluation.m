@@ -116,44 +116,50 @@ exportgraphics(fig2, fullfile(save_dir, 'Fig2_FrictionalLag_Canonical.pdf'), 'Re
 fprintf('   -> Saved: Fig2_FrictionalLag_Canonical.pdf\n');
 
 %% ========================================================================
-%% TEST 3: VARYING BREAKAWAY FORCE (ode23tb with Event Detection)
+%% TEST 3: VARYING BREAKAWAY FORCE (Exact dz/dt = 0 Event Detection)
 %% ========================================================================
-fprintf('\n>>> Running Test 3: Varying Breakaway Force (ode23tb)...\n');
+fprintf('\n>>> Running Test 3: Varying Breakaway Force (Exact dz/dt = 0)...\n');
 
+% Sweep force rates from quasi-static (0.05 N/s) to high dynamic (500 N/s)
 rate_list = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500];
-m_unit = 1.0;
+m_unit = 1.0; % Unit mass = 1 kg (Matches LuGre Fig. 4)
 
 F_break_lugre = zeros(size(rate_list));
 F_break_surr  = zeros(size(rate_list));
 
-% Event function stops integration immediately when velocity hits 1e-4 m/s (breakaway)
-event_opts = odeset(p.opts, 'Events', @breakaway_event);
-
 for i = 1:length(rate_list)
     alpha = rate_list(i);
+    
+    % Ensure t_max is long enough for slow rates to reach Fs (1.5 N)
     t_max = max(2.0, (p.Fs * 1.5) / alpha);
     
-    % Initial states: [v=0; z=0]
+    % Initial states: [velocity = 0; bristle_deflection = 0]
     Y0 = [0; 0];
     
-    % Simulate dynamic acceleration: dv/dt = (alpha*t - F)/m
-    [t_l, Y_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'lugre'), [0, t_max], Y0, event_opts);
-    [t_s, Y_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'surrogate'), [0, t_max], Y0, event_opts);
+    % Exact Event Options: Terminates when dz/dt crosses 0 from positive to negative
+    opts_l = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'lugre'));
+    opts_s = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'surrogate'));
     
-    % Peak friction at breakaway moment
-    F_l_all = compute_force(Y_l(:, 1), Y_l(:, 2), p, 'lugre');
-    F_s_all = compute_force(Y_s(:, 1), Y_s(:, 2), p, 'surrogate');
+    % Simulate dynamic acceleration: m * dv/dt = alpha*t - F_friction
+    [~, Y_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'lugre'), [0, t_max], Y0, opts_l);
+    [~, Y_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'surrogate'), [0, t_max], Y0, opts_s);
     
-    F_break_lugre(i) = F_l_all(end);
-    F_break_surr(i)  = F_s_all(end);
+    % The solver stopped at the EXACT instant dz/dt = 0 (breakaway boundary).
+    % The force at the final step is the exact physical breakaway force!
+    F_break_lugre(i) = compute_force(Y_l(end, 1), Y_l(end, 2), p, 'lugre');
+    F_break_surr(i)  = compute_force(Y_s(end, 1), Y_s(end, 2), p, 'surrogate');
 end
 
+% --- Plotting Fig. 4 Replication ---
 fig3 = figure('Name', 'Test 3: Varying Breakaway Force', 'Color', 'w', 'Position', [200, 200, 700, 500]);
 semilogx(rate_list, F_break_lugre, 'o-', 'Color', c_lugre, 'LineWidth', lw_base, 'MarkerSize', 6);
 hold on; grid on;
 semilogx(rate_list, F_break_surr, 's--', 'Color', c_surr, 'LineWidth', lw_base, 'MarkerSize', 6);
-title('Varying Breakaway Force vs. Force Rate [ode23tb]');
-xlabel('Force Rate dF_{ext}/dt [N/s]'); ylabel('Breakaway Force F_{break} [N]');
+
+title('Varying Breakaway Force vs. Force Rate (m = 1 kg) [dz/dt = 0]');
+xlabel('Force Rate dF_{ext}/dt [N/s]'); 
+ylabel('Breakaway Force F_{break} [N]');
+xlim([0.03, 700]);
 ylim([0.9, 1.6]);
 legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northeast');
 
