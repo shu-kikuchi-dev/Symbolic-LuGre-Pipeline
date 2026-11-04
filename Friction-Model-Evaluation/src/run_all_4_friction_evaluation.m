@@ -74,7 +74,7 @@ end
 title('Pre-Sliding Hysteresis: F vs. x (A = 4 \mu m) [ode23tb]');
 xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
 xlim([-5e-6, 5e-6]); ylim([-0.5, 0.5]);
-legend({'LuGre (Truth)', 'Surrogate Model 2B'}, 'Location', 'northwest');
+legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
 exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_Canonical.pdf'), 'Resolution', 300);
 fprintf('   -> Saved: Fig1_Presliding_Canonical.pdf\n');
@@ -110,7 +110,7 @@ end
 title('Frictional Lag: F vs. v Hysteresis (\omega = 1, 10, 25 rad/s) [ode23tb]');
 xlabel('Velocity v [m/s]'); ylabel('Friction Force F [N]');
 xlim([0.4e-3, 2.6e-3]); ylim([1.0, 1.4]);
-legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 2B'}, 'Location', 'northeast');
+legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northeast');
 
 exportgraphics(fig2, fullfile(save_dir, 'Fig2_FrictionalLag_Canonical.pdf'), 'Resolution', 300);
 fprintf('   -> Saved: Fig2_FrictionalLag_Canonical.pdf\n');
@@ -155,7 +155,7 @@ semilogx(rate_list, F_break_surr, 's--', 'Color', c_surr, 'LineWidth', lw_base, 
 title('Varying Breakaway Force vs. Force Rate [ode23tb]');
 xlabel('Force Rate dF_{ext}/dt [N/s]'); ylabel('Breakaway Force F_{break} [N]');
 ylim([0.9, 1.6]);
-legend({'LuGre (Truth)', 'Surrogate Model 2B'}, 'Location', 'northeast');
+legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northeast');
 
 exportgraphics(fig3, fullfile(save_dir, 'Fig3_VaryingBreakaway.pdf'), 'Resolution', 300);
 fprintf('   -> Saved: Fig3_VaryingBreakaway.pdf\n');
@@ -183,7 +183,7 @@ subplot(3, 1, 1);
 plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
 plot(t_s, Y_s(:, 1), '--', 'Color', c_surr, 'LineWidth', 1.2);
 ylabel('Position x [m]'); title('Autonomous Stick-Slip Limit Cycle [ode23tb]');
-legend({'LuGre (Truth)', 'Surrogate Model 2B'}, 'Location', 'northwest');
+legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
 subplot(3, 1, 2);
 plot(t_l, Y_l(:, 2), 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
