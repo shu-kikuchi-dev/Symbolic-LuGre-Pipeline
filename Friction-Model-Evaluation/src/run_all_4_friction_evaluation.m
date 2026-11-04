@@ -22,12 +22,11 @@ p.Fc     = 1.0;
 p.Fs     = 1.5;
 p.vs     = 0.001;
 
-% --- Surrogate Model 2B Constants (PySR Discovered) ---
+% --- Surrogate Model 15 Constants (The Champion Model) ---
 p.S0 = 1e5;
-p.C1 = 0.85228235;
-p.C2 = -0.13998671;
-p.C3 = 6.7612834;
-p.C4 = 7.2667336;
+p.C1 = 0.00042237472;
+p.C2 = 2.807613;
+p.K  = (p.S0^2) * p.C1; % Precomputed constant: 4.2237e6
 
 % --- Exact Solver Options (User-Specified Thesis Settings) ---
 p.opts = odeset('MaxStep', 1e-4, ...
@@ -214,7 +213,8 @@ function [t_out, z_out] = solve_kinematic(v_fun, tspan, p, model_type)
     if strcmp(model_type, 'lugre')
         ode = @(t, z) v_fun(t) - (p.sigma0 * abs(v_fun(t)) / (p.Fc + (p.Fs - p.Fc)*exp(-(v_fun(t)/p.vs)^2))) * z;
     else
-        ode = @(t, z) v_fun(t) - z * (abs(p.C1 * p.S0 * v_fun(t)) + abs(p.C3 + p.C2 * (p.S0^2 * v_fun(t) * z)) - p.C4);
+        % MODEL 15:
+        ode = @(t, z) v_fun(t) - abs(v_fun(t)) * (p.S0 * z - ((p.S0 * z) / (p.K * (v_fun(t)^2) + p.C2)));
     end
     [t_out, z_out] = ode23tb(ode, tspan, 0, p.opts);
 end
@@ -228,9 +228,9 @@ function dY = odefun_breakaway(t, Y, alpha, m, p, model_type)
         gv = p.Fc + (p.Fs - p.Fc) * exp(-(v / p.vs)^2);
         dz = v - (p.sigma0 * abs(v) / gv) * z;
     else
-        term1 = abs(p.C1 * p.S0 * v);
-        term2 = abs(p.C3 + p.C2 * (p.S0^2 * v * z));
-        dz = v - z * (term1 + term2 - p.C4);
+        % MODEL 15:
+        s0_z = p.S0 * z;
+        dz = v - abs(v) * (s0_z - (s0_z / (p.K * v^2 + p.C2)));
     end
     
     F_fric = p.sigma0 * z + p.sigma1 * dz + p.sigma2 * v;
@@ -258,9 +258,9 @@ function dY = odefun_stick_slip(t, Y, v_pull, m, k, p, model_type)
         gv = p.Fc + (p.Fs - p.Fc) * exp(-(v / p.vs)^2);
         dz = v - (p.sigma0 * abs(v) / gv) * z;
     else
-        term1 = abs(p.C1 * p.S0 * v);
-        term2 = abs(p.C3 + p.C2 * (p.S0^2 * v * z));
-        dz = v - z * (term1 + term2 - p.C4);
+        % MODEL 15:
+        s0_z = p.S0 * z;
+        dz = v - abs(v) * (s0_z - (s0_z / (p.K * v^2 + p.C2)));
     end
     
     F_fric = p.sigma0 * z + p.sigma1 * dz + p.sigma2 * v;
@@ -277,9 +277,9 @@ function F = compute_force(v, z, p, model_type)
         gv = p.Fc + (p.Fs - p.Fc) * exp(-(v ./ p.vs).^2);
         dz = v - (p.sigma0 .* abs(v) ./ gv) .* z;
     else
-        term1 = abs(p.C1 .* p.S0 .* v);
-        term2 = abs(p.C3 + p.C2 .* (p.S0^2 .* v .* z));
-        dz = v - z .* (term1 + term2 - p.C4);
+        % MODEL 15 (Vectorized):
+        s0_z = p.S0 .* z;
+        dz = v - abs(v) .* (s0_z - (s0_z ./ (p.K .* (v.^2) + p.C2)));
     end
     F = p.sigma0 .* z + p.sigma1 .* dz + p.sigma2 .* v;
 end
