@@ -68,13 +68,13 @@ for w_val = w_canon
     idx_l = t_l > (t_end - 2*pi/w_val);
     idx_s = t_s > (t_end - 2*pi/w_val);
     
-    plot(x_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', lw_base);
-    plot(x_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', lw_base);
+    h_l = plot(x_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', lw_base);
+    h_s = plot(x_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', lw_base);
 end
 title('Pre-Sliding Hysteresis: F vs. x (A = 4 \mu m) [ode23tb]');
 xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
 xlim([-5e-6, 5e-6]); ylim([-0.5, 0.5]);
-legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
+legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
 exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_Canonical.pdf'), 'Resolution', 300);
 fprintf('   -> Saved: Fig1_Presliding_Canonical.pdf\n');
