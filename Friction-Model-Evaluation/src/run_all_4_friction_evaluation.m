@@ -241,11 +241,25 @@ function dY = odefun_breakaway(t, Y, alpha, m, p, model_type)
 end
 
 % --- Breakaway Event Detection Function ---
-function [value, isterminal, direction] = breakaway_event(~, Y)
-    % Triggers stop when velocity reaches 1e-4 m/s (macro-sliding onset)
-    value = abs(Y(1)) - 1e-4;
-    isterminal = 1; % Stop integration
-    direction = 1;  % Positive crossing
+function [value, isterminal, direction] = breakaway_event(~, Y, alpha, m, p, model_type)
+    % Extract states
+    v = Y(1);
+    z = Y(2);
+
+    % Calculate exact dz/dt
+    if strcmp(model_type, 'lugre')
+        gv = p.Fc + (p.Fs - p.Fc) * exp(-(v / p.vs)^2);
+        dz = v - (p.sigma0 * abs(v) / gv) * z;
+    else
+        % Surrogate Model 15
+        s0_z = p.S0 * z;
+        dz = v - abs(v) * (s0_z - (s0_z / (p.K * v^2 + p.C2)));
+    end
+
+    % Event condition: dz/dt = 0
+    value = dz; 
+    isterminal = 1;  % Stop simulation immediately at breakaway
+    direction  = -1; % ONLY trigger when dz/dt crosses from positive to negative!
 end
 
 % --- Stick-Slip ODE for Test 4: States Y = [x; v; z] ---
