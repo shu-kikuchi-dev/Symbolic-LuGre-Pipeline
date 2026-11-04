@@ -186,10 +186,11 @@ F_s = compute_force(Y_s(:, 2), Y_s(:, 3), p, 'surrogate');
 fig4 = figure('Name', 'Test 4: Stick-Slip Comparison', 'Color', 'w', 'Position', [250, 250, 800, 600]);
 
 subplot(3, 1, 1);
-plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
+plot(t_ss, v_pull * t_ss, 'k:', 'LineWidth', 1.0); hold on; grid on; % Reference pulling ramp
+plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2);
 plot(t_s, Y_s(:, 1), '--', 'Color', c_surr, 'LineWidth', 1.2);
 ylabel('Position x [m]'); title('Autonomous Stick-Slip Limit Cycle [ode23tb]');
-legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
+legend({'Pulling Reference y(t)', 'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
 subplot(3, 1, 2);
 plot(t_l, Y_l(:, 2), 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
@@ -247,7 +248,7 @@ function dY = odefun_breakaway(t, Y, alpha, m, p, model_type)
 end
 
 % --- Breakaway Event Detection Function ---
-function [value, isterminal, direction] = breakaway_event(~, Y, alpha, m, p, model_type)
+function [value, isterminal, direction] = breakaway_event(t, Y, p, model_type)
     % Extract states
     v = Y(1);
     z = Y(2);
