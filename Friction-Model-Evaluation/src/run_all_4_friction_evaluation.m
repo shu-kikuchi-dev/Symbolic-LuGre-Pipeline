@@ -186,7 +186,7 @@ F_s = compute_force(Y_s(:, 2), Y_s(:, 3), p, 'surrogate');
 fig4 = figure('Name', 'Test 4: Stick-Slip Comparison', 'Color', 'w', 'Position', [250, 250, 800, 600]);
 
 subplot(3, 1, 1);
-plot(t_ss, v_pull * t_ss, 'k:', 'LineWidth', 1.0); hold on; grid on; % Reference pulling ramp
+plot([0, 25], [0, v_pull * 25], 'k:', 'LineWidth', 1.0); hold on; grid on; % Reference pulling ramp
 plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2);
 plot(t_s, Y_s(:, 1), '--', 'Color', c_surr, 'LineWidth', 1.2);
 ylabel('Position x [m]'); title('Autonomous Stick-Slip Limit Cycle [ode23tb]');
@@ -263,8 +263,13 @@ function [value, isterminal, direction] = breakaway_event(t, Y, p, model_type)
         dz = v - abs(v) * (s0_z - (s0_z / (p.K * v^2 + p.C2)));
     end
 
-    % Event condition: dz/dt = 0
-    value = dz; 
+    % Add this inside breakaway_event right before 'value = dz;':
+    if t < 1e-5
+        value = 1.0; % Force non-zero during initial start
+    else
+        value = dz;  % Detect dz/dt = 0 at breakaway
+    end
+ 
     isterminal = 1;  % Stop simulation immediately at breakaway
     direction  = -1; % ONLY trigger when dz/dt crosses from positive to negative!
 end
