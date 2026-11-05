@@ -11,7 +11,9 @@ fprintf('====================================================================\n'
 fprintf('   RUNNING 4-PHENOMENON EVALUATION SUITE WITH ode23tb SOLVER       \n');
 fprintf('====================================================================\n');
 
-save_dir = fullfile(pwd, '..', 'tmp-outputs', 'model15');
+date = '26-11-05';
+
+save_dir = fullfile(pwd, 'tmp-outputs', 'model15', date);
 if ~exist(save_dir, 'dir'), mkdir(save_dir); end
 
 % --- Physical LuGre Parameters (Ground Truth) ---
