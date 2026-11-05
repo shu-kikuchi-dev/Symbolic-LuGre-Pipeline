@@ -162,53 +162,52 @@ fprintf('   -> Saved: Fig2_FrictionalLag_StressTest.pdf\n');
 %% ========================================================================
 %% TEST 3: VARYING BREAKAWAY FORCE (Exact dz/dt = 0 Event Detection)
 %% ========================================================================
-fprintf('\n>>> Running Test 3: Varying Breakaway Force (Exact dz/dt = 0)...\n');
+fprintf('\n>>> Running Test 3: Varying Breakaway across Masses...\n');
 
-% Sweep force rates from quasi-static (0.05 N/s) to high dynamic (500 N/s)
 rate_list = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500];
-m_unit = 1.0; % Unit mass = 1 kg (Matches LuGre Fig. 4)
+mass_list = [0.1, 1.0, 10.0];
+markers = {'o', 's', '^'};
 
-F_break_lugre = zeros(size(rate_list));
-F_break_surr  = zeros(size(rate_list));
+fig3 = figure('Name', 'Test 3: Varying Breakaway Mass Sweep', 'Color', 'w', 'Position', [100, 100, 750, 500]);
+hold on; grid on;
 
-for i = 1:length(rate_list)
-    alpha = rate_list(i);
+legend_entries = {};
+h_plots = [];
+
+for m_idx = 1:length(mass_list)
+    m_val = mass_list(m_idx);
+    F_brk_l = zeros(size(rate_list));
+    F_brk_s = zeros(size(rate_list));
     
-    % Ensure t_max is long enough for slow rates to reach Fs (1.5 N)
-    t_max = max(2.0, (p.Fs * 1.5) / alpha);
+    for i = 1:length(rate_list)
+        alpha = rate_list(i);
+        t_max = max(2.0, (p.Fs * 1.5) / alpha);
+        Y0 = [0; 0];
+        
+        opts_l = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'lugre'));
+        opts_s = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'surrogate'));
+        
+        [~, Y_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'lugre'), [0, t_max], Y0, opts_l);
+        [~, Y_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'surrogate'), [0, t_max], Y0, opts_s);
+        
+        F_brk_l(i) = compute_force(Y_l(end, 1), Y_l(end, 2), p, 'lugre');
+        F_brk_s(i) = compute_force(Y_s(end, 1), Y_s(end, 2), p, 'surrogate');
+    end
     
-    % Initial states: [velocity = 0; bristle_deflection = 0]
-    Y0 = [0; 0];
+    h1 = semilogx(rate_list, F_brk_l, ['-', markers{m_idx}], 'Color', c_lugre, 'LineWidth', 1.2, 'MarkerSize', 6);
+    h2 = semilogx(rate_list, F_brk_s, ['--', markers{m_idx}], 'Color', c_surr, 'LineWidth', 1.2, 'MarkerSize', 6);
     
-    % Exact Event Options: Terminates when dz/dt crosses 0 from positive to negative
-    opts_l = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'lugre'));
-    opts_s = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'surrogate'));
-    
-    % Simulate dynamic acceleration: m * dv/dt = alpha*t - F_friction
-    [~, Y_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'lugre'), [0, t_max], Y0, opts_l);
-    [~, Y_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_unit, p, 'surrogate'), [0, t_max], Y0, opts_s);
-    
-    % The solver stopped at the EXACT instant dz/dt = 0 (breakaway boundary).
-    % The force at the final step is the exact physical breakaway force!
-    F_break_lugre(i) = compute_force(Y_l(end, 1), Y_l(end, 2), p, 'lugre');
-    F_break_surr(i)  = compute_force(Y_s(end, 1), Y_s(end, 2), p, 'surrogate');
+    h_plots = [h_plots, h1, h2];
+    legend_entries = [legend_entries, {sprintf('LuGre (m = %.1f kg)', m_val), sprintf('Model 15 (m = %.1f kg)', m_val)}];
 end
 
-% --- Plotting Fig. 4 Replication ---
-fig3 = figure('Name', 'Test 3: Varying Breakaway Force', 'Color', 'w', 'Position', [200, 200, 700, 500]);
-semilogx(rate_list, F_break_lugre, 'o-', 'Color', c_lugre, 'LineWidth', lw_base, 'MarkerSize', 6);
-hold on; grid on;
-semilogx(rate_list, F_break_surr, 's--', 'Color', c_surr, 'LineWidth', lw_base, 'MarkerSize', 6);
+title('Varying Breakaway Force vs. Force Rate across Masses');
+xlabel('Force Rate dF_{ext}/dt [N/s]'); ylabel('Breakaway Force F_{break} [N]');
+xlim([0.03, 700]); ylim([0.9, 1.6]);
+legend(h_plots, legend_entries, 'Location', 'northeast');
 
-title('Varying Breakaway Force vs. Force Rate (m = 1 kg) [dz/dt = 0]');
-xlabel('Force Rate dF_{ext}/dt [N/s]'); 
-ylabel('Breakaway Force F_{break} [N]');
-xlim([0.03, 700]);
-ylim([0.9, 1.6]);
-legend({'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northeast');
-
-exportgraphics(fig3, fullfile(save_dir, 'Fig3_VaryingBreakaway.pdf'), 'Resolution', 300);
-fprintf('   -> Saved: Fig3_VaryingBreakaway.pdf\n');
+exportgraphics(fig3, fullfile(save_dir, 'Fig3_VaryingBreakaway_MassSweep.pdf'), 'Resolution', 300);
+fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 
 %% ========================================================================
 %% TEST 4: AUTONOMOUS STICK-SLIP (ode23tb Mass-Spring Plant)
