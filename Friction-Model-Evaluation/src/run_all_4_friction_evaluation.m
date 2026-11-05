@@ -214,41 +214,54 @@ fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 %% ========================================================================
 %% TEST 4: AUTONOMOUS STICK-SLIP (ode23tb Mass-Spring Plant)
 %% ========================================================================
-fprintf('\n>>> Running Test 4: Autonomous Stick-Slip Motion (ode23tb)...\n');
+fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map...\n');
 
+k_list = [0.5, 2.0, 20.0, 200.0];
+v_pull_list = [0.0001, 0.0005, 0.001, 0.003, 0.008, 0.02, 0.05, 0.1];
 m_ss = 1.0;
-k_ss = 2.0;
-v_pull = 0.1; % Canonical LuGre Fig. 6
-t_span = [0, 25];
-Y0_ss = [0; 0; 0]; % [x=0; v=0; z=0]
+k_markers = {'o', 's', '^', 'd'};
 
-[t_l, Y_l] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, v_pull, m_ss, k_ss, p, 'lugre'), t_span, Y0_ss, p.opts);
-[t_s, Y_s] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, v_pull, m_ss, k_ss, p, 'surrogate'), t_span, Y0_ss, p.opts);
+fig4 = figure('Name', 'Test 4: Bifurcation Map', 'Color', 'w', 'Position', [100, 100, 800, 500]);
+hold on; grid on;
 
-F_l = compute_force(Y_l(:, 2), Y_l(:, 3), p, 'lugre');
-F_s = compute_force(Y_s(:, 2), Y_s(:, 3), p, 'surrogate');
+h_bif = [];
+bif_legends = {};
 
-fig4 = figure('Name', 'Test 4: Stick-Slip Comparison', 'Color', 'w', 'Position', [250, 250, 800, 600]);
+for k_idx = 1:length(k_list)
+    k_val = k_list(k_idx);
+    ripple_l = zeros(size(v_pull_list));
+    ripple_s = zeros(size(v_pull_list));
 
-subplot(3, 1, 1);
-plot([0, 25], [0, v_pull * 25], 'k:', 'LineWidth', 1.0); hold on; grid on; % Reference pulling ramp
-plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2);
-plot(t_s, Y_s(:, 1), '--', 'Color', c_surr, 'LineWidth', 1.2);
-ylabel('Position x [m]'); title('Autonomous Stick-Slip Limit Cycle [ode23tb]');
-legend({'Pulling Reference y(t)', 'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
+    for i = 1:length(v_pull_list)
+        vp = v_pull_list(i);
+        t_sim_end = max(15.0, (1.5 / (k_val * vp)) * 4); % Enough time for 4 stick-slip cycles
+        t_span = [0, t_sim_end];
+        Y0 = [0; 0; 0];
 
-subplot(3, 1, 2);
-plot(t_l, Y_l(:, 2), 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
-plot(t_s, Y_s(:, 2), '--', 'Color', c_surr, 'LineWidth', 1.2);
-ylabel('Velocity v [m/s]'); ylim([-0.05, 0.5]);
+        [t_l, Y_l] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, vp, m_ss, k_val, p, 'lugre'), t_span, Y0, p.opts);
+        [t_s, Y_s] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, vp, m_ss, k_val, p, 'surrogate'), t_span, Y0, p.opts);
 
-subplot(3, 1, 3);
-plot(t_l, F_l, 'Color', c_lugre, 'LineWidth', 1.2); hold on; grid on;
-plot(t_s, F_s, '--', 'Color', c_surr, 'LineWidth', 1.2);
-xlabel('Time [s]'); ylabel('Friction F [N]'); ylim([0.5, 1.7]);
+        % Calculate velocity ripple in steady-state (last 40% of time)
+        idx_ss_l = t_l > (0.6 * t_sim_end);
+        idx_ss_s = t_s > (0.6 * t_sim_end);
 
-exportgraphics(fig4, fullfile(save_dir, 'Fig4_StickSlip_TimeHistory.pdf'), 'Resolution', 300);
-fprintf('   -> Saved: Fig4_StickSlip_TimeHistory.pdf\n');
+        ripple_l(i) = max(Y_l(idx_ss_l, 2)) - min(Y_l(idx_ss_l, 2));
+        ripple_s(i) = max(Y_s(idx_ss_s, 2)) - min(Y_s(idx_ss_s, 2));
+    end
+
+    h1 = semilogx(v_pull_list, ripple_l, ['-', k_markers{k_idx}], 'Color', c_lugre, 'LineWidth', 1.2, 'MarkerSize', 6);
+    h2 = semilogx(v_pull_list, ripple_s, ['--', k_markers{k_idx}], 'Color', c_surr, 'LineWidth', 1.2, 'MarkerSize', 6);
+
+    h_bif = [h_bif, h1, h2];
+    bif_legends = [bif_legends, {sprintf('LuGre (k = %.1f N/m)', k_val), sprintf('Model 15 (k = %.1f N/m)', k_val)}];
+end
+
+title('Stick-Slip Bifurcation Map: Velocity Ripple \Delta v vs. Pulling Speed');
+xlabel('Pulling Velocity v_{pull} [m/s]'); ylabel('Velocity Ripple \Delta v = v_{max} - v_{min} [m/s]');
+legend(h_bif, bif_legends, 'Location', 'northeast');
+
+exportgraphics(fig4, fullfile(save_dir, 'Fig4_StickSlip_BifurcationMap.pdf'), 'Resolution', 300);
+fprintf('   -> Saved: Fig4_StickSlip_BifurcationMap.pdf\n');
 
 fprintf('\n====================================================================\n');
 fprintf('   SUCCESS: ALL 4 BENCHMARKS SIMULATED VIA ode23tb & EXPORTED!      \n');
