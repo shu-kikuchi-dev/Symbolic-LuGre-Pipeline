@@ -181,6 +181,8 @@ for m_idx = 1:length(mass_list)
     
     for i = 1:length(rate_list)
         alpha = rate_list(i);
+        % because, breakaway would happen roughly by F=Fs, which means t=Fs/a, 
+        % when F = at. And 1.5 is extra time, guarantees breakaway
         t_max = max(2.0, (p.Fs * 1.5) / alpha);
         Y0 = [0; 0];
         
