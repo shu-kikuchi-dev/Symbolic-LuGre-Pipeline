@@ -216,8 +216,8 @@ fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 %% ========================================================================
 fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map...\n');
 
-k_list = [0.5, 2.0, 20.0, 200.0];
-v_pull_list = [0.0001, 0.0005, 0.001, 0.003, 0.008, 0.02, 0.05, 0.1];
+k_list = [2.0, 20.0, 200.0];
+v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
 m_ss = 1.0;
 k_markers = {'o', 's', '^', 'd'};
 
