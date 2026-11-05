@@ -108,39 +108,56 @@ fprintf('   -> Saved: Fig1_Presliding_StressTest.pdf\n');
 
 %% ========================================================================
 %% TEST 2: FRICTIONAL LAG (F vs. v) via ode23tb
+%  Subplot1: v_bias=1.0 mm/s, A=0.8 mm/s
+%  Subplot2: v_bias=1.5 mm/s, A=1.0 mm/s
+%  Subplot3: v_bias=5.0 mm/s, A=2.0 mm/s
 %% ========================================================================
-fprintf('\n>>> Running Test 2: Frictional Lag (ode23tb)...\n');
+fprintf('\n>>> Running Test 2: Frictional Lag Multi-Regime...\n');
 
-lag_w_list = [1, 10, 25];
-v_bias = 1.5e-3;
-v_amp  = 1.0e-3;
+lag_w_sweep = [0.1, 1, 25, 50, 100];
 
-fig2 = figure('Name', 'Test 2: Frictional Lag Canonical', 'Color', 'w', 'Position', [150, 150, 750, 500]);
-hold on; grid on;
+% 3 Operating Regimes: [Bias, Amplitude]
+regimes = [
+    1.0e-3, 0.8e-3;   % Regime 1: Stribeck Cliff
+    1.5e-3, 1.0e-3;   % Regime 2: Canonical
+    5.0e-3, 2.0e-3    % Regime 3: Viscous Dominance
+];
+regime_titles = {
+    'Stribeck Cliff (1.0 \pm 0.8 mm/s)', ...
+    'Canonical Region (1.5 \pm 1.0 mm/s)', ...
+    'Viscous Region (5.0 \pm 2.0 mm/s)'
+};
 
-for w_val = lag_w_list
-    t_end = max(15, (2*pi/w_val)*4);
-    v_fun = @(t) v_bias + v_amp * sin(w_val * t);
+fig2 = figure('Name', 'Test 2: Frictional Lag Multi-Regime', 'Color', 'w', 'Position', [50, 100, 1200, 400]);
+
+for reg_idx = 1:3
+    subplot(1, 3, reg_idx); hold on; grid on;
+    vb = regimes(reg_idx, 1);
+    va = regimes(reg_idx, 2);
     
-    [t_l, z_l] = solve_kinematic(v_fun, [0, t_end], p, 'lugre');
-    [t_s, z_s] = solve_kinematic(v_fun, [0, t_end], p, 'surrogate');
-    
-    F_l = compute_force(v_fun(t_l), z_l, p, 'lugre');
-    F_s = compute_force(v_fun(t_s), z_s, p, 'surrogate');
-    
-    idx_l = t_l > (t_end - 2*pi/w_val);
-    idx_s = t_s > (t_end - 2*pi/w_val);
-    
-    h_l = plot(v_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', lw_base);
-    h_s = plot(v_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', lw_base);
+    for w_val = lag_w_sweep
+        t_end = max(8.0, (2*pi/w_val)*2);
+        v_fun = @(t) vb + va * sin(w_val * t);
+        
+        [t_l, z_l] = solve_kinematic(v_fun, [0, t_end], p, 'lugre');
+        [t_s, z_s] = solve_kinematic(v_fun, [0, t_end], p, 'surrogate');
+        
+        F_l = compute_force(v_fun(t_l), z_l, p, 'lugre');
+        F_s = compute_force(v_fun(t_s), z_s, p, 'surrogate');
+        
+        idx_l = t_l > (t_end - 2*pi/w_val);
+        idx_s = t_s > (t_end - 2*pi/w_val);
+        
+        h_l = plot(v_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', 1.0);
+        h_s = plot(v_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', 1.2);
+    end
+    title(regime_titles{reg_idx});
+    xlabel('Velocity v [m/s]'); ylabel('Friction Force F [N]');
+    if reg_idx == 1, legend([h_l, h_s], {'LuGre', 'Model 15'}, 'Location', 'northeast'); end
 end
-title('Frictional Lag: F vs. v Hysteresis (\omega = 1, 10, 25 rad/s) [ode23tb]');
-xlabel('Velocity v [m/s]'); ylabel('Friction Force F [N]');
-xlim([0.4e-3, 2.6e-3]); ylim([1.0, 1.4]);
-legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northeast');
 
-exportgraphics(fig2, fullfile(save_dir, 'Fig2_FrictionalLag_Canonical.pdf'), 'Resolution', 300);
-fprintf('   -> Saved: Fig2_FrictionalLag_Canonical.pdf\n');
+exportgraphics(fig2, fullfile(save_dir, 'Fig2_FrictionalLag_StressTest.pdf'), 'Resolution', 300);
+fprintf('   -> Saved: Fig2_FrictionalLag_StressTest.pdf\n');
 
 %% ========================================================================
 %% TEST 3: VARYING BREAKAWAY FORCE (Exact dz/dt = 0 Event Detection)
