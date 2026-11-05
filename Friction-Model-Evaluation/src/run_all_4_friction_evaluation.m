@@ -42,44 +42,69 @@ lw_base = 1.5;
 
 %% ========================================================================
 %% TEST 1: PRE-SLIDING HYSTERESIS (F vs. x) via ode23tb
+%  Subplot1: Fixes omega=10 rad/s and sweeps A=[1, 5, 14, 30] um
+%  Subplot2: Fixes A=4 um and sweeps omega=[0.1, 1, 10, 50, 200, 1000] rad/s
 %% ========================================================================
 fprintf('\n>>> Running Test 1: Pre-Sliding Hysteresis (ode23tb)...\n');
 
-w_canon = [1, 10, 25];
-A_canon = 4e-6; % 4 um (Well below delta = 15 um)
+fig1 = figure('Name', 'Test 1: Pre-Sliding Stress-Test', 'Color', 'w', 'Position', [50, 50, 1100, 450]);
 
-fig1 = figure('Name', 'Test 1: Pre-Sliding Canonical', 'Color', 'w', 'Position', [100, 100, 700, 500]);
-hold on; grid on;
+% --- Subplot 1: Amplitude Boundary Sweep (A = 1, 5, 14, 30 um at w = 10 rad/s) ---
+subplot(1, 2, 1); hold on; grid on;
+amp_sweep = [1e-6, 5e-6, 14e-6, 30e-6];
+w_fixed = 10;
+t_end_amp = (2*pi/w_fixed) * 3;
 
-for w_val = w_canon
-    t_end = max(10, (2*pi/w_val)*4);
-    
-    % Kinematic handles
-    v_fun = @(t) A_canon * w_val * cos(w_val * t);
-    x_fun = @(t) A_canon * sin(w_val * t);
-    
-    % Simulate state z(t) via ode23tb
-    [t_l, z_l] = solve_kinematic(v_fun, [0, t_end], p, 'lugre');
-    [t_s, z_s] = solve_kinematic(v_fun, [0, t_end], p, 'surrogate');
-    
-    % Compute Force
+for A_val = amp_sweep
+    v_fun = @(t) A_val * w_fixed * cos(w_fixed * t);
+    x_fun = @(t) A_val * sin(w_fixed * t);
+
+    [t_l, z_l] = solve_kinematic(v_fun, [0, t_end_amp], p, 'lugre');
+    [t_s, z_s] = solve_kinematic(v_fun, [0, t_end_amp], p, 'surrogate');
+
     F_l = compute_force(v_fun(t_l), z_l, p, 'lugre');
     F_s = compute_force(v_fun(t_s), z_s, p, 'surrogate');
-    
-    % Extract last steady-state cycle
-    idx_l = t_l > (t_end - 2*pi/w_val);
-    idx_s = t_s > (t_end - 2*pi/w_val);
-    
-    h_l = plot(x_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', lw_base);
-    h_s = plot(x_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', lw_base);
+
+    % Keeping only the last 1 period and throwing away everything before it
+    idx_l = t_l > (t_end_amp - 2*pi/w_fixed);
+    idx_s = t_s > (t_end_amp - 2*pi/w_fixed);
+
+    plot(x_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', 1.0);
+    plot(x_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', 1.2);
 end
-title('Pre-Sliding Hysteresis: F vs. x (A = 4 \mu m) [ode23tb]');
+title('Amplitude Boundary Sweep (\omega = 10 rad/s)');
 xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
-xlim([-5e-6, 5e-6]); ylim([-0.5, 0.5]);
+xlim([-3.2e-5, 3.2e-5]); ylim([-1.2, 1.2]);
+
+% --- Subplot 2: Frequency Sweep (Rate-Independence from 0.1 to 1000 rad/s) ---
+subplot(1, 2, 2); hold on; grid on;
+w_sweep = [0.1, 1, 10, 50, 200, 1000];
+A_fixed = 4e-6;
+
+for w_val = w_sweep
+    t_end_w = max(4.0, (2*pi/w_val) * 2); % 2 cycles is enough
+    v_fun = @(t) A_fixed * w_val * cos(w_val * t);
+    x_fun = @(t) A_fixed * sin(w_val * t);
+
+    [t_l, z_l] = solve_kinematic(v_fun, [0, t_end_w], p, 'lugre');
+    [t_s, z_s] = solve_kinematic(v_fun, [0, t_end_w], p, 'surrogate');
+
+    F_l = compute_force(v_fun(t_l), z_l, p, 'lugre');
+    F_s = compute_force(v_fun(t_s), z_s, p, 'surrogate');
+
+    idx_l = t_l > (t_end_w - 2*pi/w_val);
+    idx_s = t_s > (t_end_w - 2*pi/w_val);
+
+    h_l = plot(x_fun(t_l(idx_l)), F_l(idx_l), 'Color', c_lugre, 'LineWidth', 1.0);
+    h_s = plot(x_fun(t_s(idx_s)), F_s(idx_s), '--', 'Color', c_surr, 'LineWidth', 1.2);
+end
+title('Frequency Sweep (0.1 to 1000 rad/s, A = 4 \mu m)');
+xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
+xlim([-5e-6, 5e-6]); ylim([-0.6, 0.6]);
 legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
-exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_Canonical.pdf'), 'Resolution', 300);
-fprintf('   -> Saved: Fig1_Presliding_Canonical.pdf\n');
+exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_StressTest.pdf'), 'Resolution', 300);
+fprintf('   -> Saved: Fig1_Presliding_StressTest.pdf\n');
 
 %% ========================================================================
 %% TEST 2: FRICTIONAL LAG (F vs. v) via ode23tb
