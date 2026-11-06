@@ -214,6 +214,7 @@ end
 
 title('Varying Breakaway Force vs. Force Rate across Masses');
 xlabel('Force Rate dF_{ext}/dt [N/s]'); ylabel('Breakaway Force F_{break} [N]');
+set(gca, 'XScale', 'log');
 xlim([0.03, 700]); ylim([0.9, 1.6]);
 legend(h_plots, legend_entries, 'Location', 'northeast');
 
