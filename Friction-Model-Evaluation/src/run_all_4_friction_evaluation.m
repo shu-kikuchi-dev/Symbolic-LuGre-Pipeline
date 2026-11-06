@@ -74,7 +74,7 @@ for A_val = amp_sweep
 end
 title('Amplitude Boundary Sweep (\omega = 10 rad/s)');
 xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
-xlim([-3.2e-5, 3.2e-5]); ylim([-1.2, 1.2]);
+xlim([-3.2e-5, 3.2e-5]); ylim([-1.6, 1.6]);
 
 % --- Subplot 2: Frequency Sweep (Rate-Independence from 0.1 to 1000 rad/s) ---
 subplot(1, 2, 2); hold on; grid on;
@@ -100,7 +100,7 @@ for w_val = w_sweep
 end
 title('Frequency Sweep (0.1 to 1000 rad/s, A = 4 \mu m)');
 xlabel('Displacement x [m]'); ylabel('Friction Force F [N]');
-xlim([-5e-6, 5e-6]); ylim([-0.6, 0.6]);
+xlim([-5e-6, 5e-6]); ylim([-1.6, 1.6]);
 legend([h_l, h_s], {'LuGre (Truth)', 'Surrogate Model 15'}, 'Location', 'northwest');
 
 exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_StressTest.pdf'), 'Resolution', 300);
@@ -189,11 +189,20 @@ for m_idx = 1:length(mass_list)
         opts_l = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'lugre'));
         opts_s = odeset(p.opts, 'Events', @(t, Y) breakaway_event(t, Y, p, 'surrogate'));
         
-        [~, Y_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'lugre'), [0, t_max], Y0, opts_l);
-        [~, Y_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'surrogate'), [0, t_max], Y0, opts_s);
-        
-        F_brk_l(i) = compute_force(Y_l(end, 1), Y_l(end, 2), p, 'lugre');
-        F_brk_s(i) = compute_force(Y_s(end, 1), Y_s(end, 2), p, 'surrogate');
+        [~, Y_l, ~, ye_l] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'lugre'), [0, t_max], Y0, opts_l);
+        [~, Y_s, ~, ye_s] = ode23tb(@(t, Y) odefun_breakaway(t, Y, alpha, m_val, p, 'surrogate'), [0, t_max], Y0, opts_s);
+
+        if ~isempty(ye_l)
+            F_brk_l(i) = compute_force(ye_l(end, 1), ye_l(end, 2), p, 'lugre');
+        else
+            F_brk_l(i) = max(compute_force(Y_l(:, 1), Y_l(:, 2), p, 'lugre'));
+        end
+
+        if ~isempty(ye_s)
+            F_brk_s(i) = compute_force(ye_s(end, 1), ye_s(end, 2), p, 'surrogate');
+        else
+            F_brk_s(i) = max(compute_force(Y_s(:, 1), Y_s(:, 2), p, 'surrogate'));
+        end
     end
     
     h1 = semilogx(rate_list, F_brk_l, ['-', markers{m_idx}], 'Color', c_lugre, 'LineWidth', 1.2, 'MarkerSize', 6);
@@ -217,7 +226,7 @@ fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map & Exporting All Waveforms...\n');
 
 k_list = [2.0, 20.0, 200.0];
-v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2]; % (or add 0.4)
+v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4];
 m_ss = 1.0;
 k_markers = {'o', 's', '^', 'd'};
 
