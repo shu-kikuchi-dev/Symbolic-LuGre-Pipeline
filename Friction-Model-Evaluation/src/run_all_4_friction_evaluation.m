@@ -221,7 +221,7 @@ exportgraphics(fig3, fullfile(save_dir, 'Fig3_VaryingBreakaway_MassSweep.pdf'), 
 fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 
 %% ========================================================================
-%% TEST 4: AUTONOMOUS STICK-SLIP (Bifurcation Map + All 18 Waveforms)
+%% TEST 4: AUTONOMOUS STICK-SLIP (Bifurcation Map + All 21 Waveforms)
 %% ========================================================================
 fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map & Exporting All Waveforms...\n');
 
