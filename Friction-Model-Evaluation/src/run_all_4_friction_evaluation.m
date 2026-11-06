@@ -11,7 +11,7 @@ fprintf('====================================================================\n'
 fprintf('   RUNNING 4-PHENOMENON EVALUATION SUITE WITH ode23tb SOLVER       \n');
 fprintf('====================================================================\n');
 
-date_and_exp = '26-11-05_first-attempt-with-fullsize-experiments';
+date_and_exp = '26-11-05_second-attempt-with-more-realistic-test4-conditions';
 
 save_dir = fullfile(pwd, 'tmp-outputs', 'model15', date_and_exp);
 if ~exist(save_dir, 'dir'), mkdir(save_dir); end
@@ -217,7 +217,7 @@ fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map...\n');
 
 k_list = [2.0, 20.0, 200.0];
-v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
+v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4];
 m_ss = 1.0;
 k_markers = {'o', 's', '^', 'd'};
 
