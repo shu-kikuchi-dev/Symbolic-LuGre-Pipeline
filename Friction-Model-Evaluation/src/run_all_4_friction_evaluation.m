@@ -212,14 +212,18 @@ exportgraphics(fig3, fullfile(save_dir, 'Fig3_VaryingBreakaway_MassSweep.pdf'), 
 fprintf('   -> Saved: Fig3_VaryingBreakaway_MassSweep.pdf\n');
 
 %% ========================================================================
-%% TEST 4: AUTONOMOUS STICK-SLIP (ode23tb Mass-Spring Plant)
+%% TEST 4: AUTONOMOUS STICK-SLIP (Bifurcation Map + All 18 Waveforms)
 %% ========================================================================
-fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map...\n');
+fprintf('\n>>> Running Test 4: Stick-Slip Bifurcation Map & Exporting All Waveforms...\n');
 
 k_list = [2.0, 20.0, 200.0];
-v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4];
+v_pull_list = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2]; % (or add 0.4)
 m_ss = 1.0;
 k_markers = {'o', 's', '^', 'd'};
+
+% Create a dedicated folder for the 18 raw waveforms
+wf_dir = fullfile(save_dir, 'stick_slip_all_cases');
+if ~exist(wf_dir, 'dir'), mkdir(wf_dir); end
 
 fig4 = figure('Name', 'Test 4: Bifurcation Map', 'Color', 'w', 'Position', [100, 100, 800, 500]);
 hold on; grid on;
@@ -234,10 +238,11 @@ for k_idx = 1:length(k_list)
 
     for i = 1:length(v_pull_list)
         vp = v_pull_list(i);
-        t_sim_end = max(15.0, (1.5 / (k_val * vp)) * 4); % Enough time for 4 stick-slip cycles
+        t_sim_end = max(15.0, (1.5 / (k_val * vp)) * 4); % Guarantees ~4 cycles
         t_span = [0, t_sim_end];
         Y0 = [0; 0; 0];
 
+        % Run both models
         [t_l, Y_l] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, vp, m_ss, k_val, p, 'lugre'), t_span, Y0, p.opts);
         [t_s, Y_s] = ode23tb(@(t, Y) odefun_stick_slip(t, Y, vp, m_ss, k_val, p, 'surrogate'), t_span, Y0, p.opts);
 
@@ -247,8 +252,49 @@ for k_idx = 1:length(k_list)
 
         ripple_l(i) = max(Y_l(idx_ss_l, 2)) - min(Y_l(idx_ss_l, 2));
         ripple_s(i) = max(Y_s(idx_ss_s, 2)) - min(Y_s(idx_ss_s, 2));
+
+        % =================================================================
+        % --- GENERATE & EXPORT TIME-DOMAIN WAVEFORM (All 18 Cases) ---
+        % =================================================================
+        fig_case = figure('Visible', 'off', 'Color', 'w', 'Position', [100, 100, 900, 650]);
+
+        % Subplot 1: Position x(t)
+        subplot(3, 1, 1); hold on; grid on;
+        plot(t_l, vp * t_l, 'k:', 'LineWidth', 1.0);
+        plot(t_l, Y_l(:, 1), 'Color', c_lugre, 'LineWidth', 1.2);
+        plot(t_s, Y_s(:, 1), '--', 'Color', c_surr, 'LineWidth', 1.2);
+        ylabel('Position x [m]');
+        title(sprintf('Stick-Slip Dynamics: k = %.1f N/m, v_{pull} = %.4f m/s', k_val, vp));
+        legend({'Pulling Reference y(t)', 'LuGre (Truth)', 'Model 15'}, 'Location', 'northwest');
+        xlim([0, t_sim_end]);
+
+        % Subplot 2: Velocity v(t)
+        subplot(3, 1, 2); hold on; grid on;
+        plot(t_l, Y_l(:, 2), 'Color', c_lugre, 'LineWidth', 1.2);
+        plot(t_s, Y_s(:, 2), '--', 'Color', c_surr, 'LineWidth', 1.2);
+        ylabel('Velocity v [m/s]');
+        xlim([0, t_sim_end]);
+
+        % Subplot 3: Friction Force F(t)
+        F_plot_l = compute_force(Y_l(:, 2), Y_l(:, 3), p, 'lugre');
+        F_plot_s = compute_force(Y_s(:, 2), Y_s(:, 3), p, 'surrogate');
+        subplot(3, 1, 3); hold on; grid on;
+        plot(t_l, F_plot_l, 'Color', c_lugre, 'LineWidth', 1.2);
+        plot(t_s, F_plot_s, '--', 'Color', c_surr, 'LineWidth', 1.2);
+        xlabel('Time [s]'); ylabel('Friction F [N]');
+        ylim([0.4, 1.8]);
+        xlim([0, t_sim_end]);
+
+        % Export as PNG for quick inspection in your OS image viewer
+        file_name = sprintf('StickSlip_k%05.1f_vp%06.4f.png', k_val, vp);
+        exportgraphics(fig_case, fullfile(wf_dir, file_name), 'Resolution', 200);
+
+        % Close figure to prevent graphics memory leaks
+        close(fig_case);
     end
 
+    % Update Bifurcation plot
+    figure(fig4);
     h1 = semilogx(v_pull_list, ripple_l, ['-', k_markers{k_idx}], 'Color', c_lugre, 'LineWidth', 1.2, 'MarkerSize', 6);
     h2 = semilogx(v_pull_list, ripple_s, ['--', k_markers{k_idx}], 'Color', c_surr, 'LineWidth', 1.2, 'MarkerSize', 6);
 
@@ -256,18 +302,19 @@ for k_idx = 1:length(k_list)
     bif_legends = [bif_legends, {sprintf('LuGre (k = %.1f N/m)', k_val), sprintf('Model 15 (k = %.1f N/m)', k_val)}];
 end
 
+figure(fig4);
 title('Stick-Slip Bifurcation Map: Velocity Ripple \Delta v vs. Pulling Speed');
 xlabel('Pulling Velocity v_{pull} [m/s]'); ylabel('Velocity Ripple \Delta v = v_{max} - v_{min} [m/s]');
+set(gca, 'XScale', 'log'); % Ensures log scale
 legend(h_bif, bif_legends, 'Location', 'northeast');
 
 exportgraphics(fig4, fullfile(save_dir, 'Fig4_StickSlip_BifurcationMap.pdf'), 'Resolution', 300);
-fprintf('   -> Saved: Fig4_StickSlip_BifurcationMap.pdf\n');
+fprintf('   -> Saved: Fig4_StickSlip_BifurcationMap.pdf and 18 PNG waveforms in /stick_slip_all_cases\n');
 
 fprintf('\n====================================================================\n');
 fprintf('   SUCCESS: ALL 4 BENCHMARKS SIMULATED VIA ode23tb & EXPORTED!      \n');
 fprintf('   Folder: %s\n', save_dir);
 fprintf('====================================================================\n');
-
 
 %% ========================================================================
 %% ODE EQUATION DEFINITIONS FOR ode23tb
