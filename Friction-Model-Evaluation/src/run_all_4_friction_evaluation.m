@@ -11,7 +11,7 @@ fprintf('====================================================================\n'
 fprintf('   RUNNING 4-PHENOMENON EVALUATION SUITE WITH ode23tb SOLVER       \n');
 fprintf('====================================================================\n');
 
-date_and_exp = '26-11-05_second-attempt-with-more-realistic-test4-conditions';
+date_and_exp = '26-11-06_after-overhauling-stickslip-trimming';
 
 save_dir = fullfile(pwd, 'tmp-outputs', 'model15', date_and_exp);
 if ~exist(save_dir, 'dir'), mkdir(save_dir); end
