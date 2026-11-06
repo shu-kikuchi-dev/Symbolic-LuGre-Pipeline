@@ -11,7 +11,7 @@ fprintf('====================================================================\n'
 fprintf('   RUNNING 4-PHENOMENON EVALUATION SUITE WITH ode23tb SOLVER       \n');
 fprintf('====================================================================\n');
 
-date_and_exp = '26-11-06_after-overhauling-stickslip-trimming';
+date_and_exp = '26-11-06_test2-with-viscous-regime-test3-with-logscale';
 
 save_dir = fullfile(pwd, 'tmp-outputs', 'model15', date_and_exp);
 if ~exist(save_dir, 'dir'), mkdir(save_dir); end
@@ -107,31 +107,35 @@ exportgraphics(fig1, fullfile(save_dir, 'Fig1_Presliding_StressTest.pdf'), 'Reso
 fprintf('   -> Saved: Fig1_Presliding_StressTest.pdf\n');
 
 %% ========================================================================
-%% TEST 2: FRICTIONAL LAG (F vs. v) via ode23tb
+%% TEST 2: FRICTIONAL LAG (F vs. v) via ode23tb (4 Regimes)
 %  Subplot1: v_bias=1.0 mm/s, A=0.8 mm/s
 %  Subplot2: v_bias=1.5 mm/s, A=1.0 mm/s
 %  Subplot3: v_bias=5.0 mm/s, A=2.0 mm/s
+%  Subplot4: v_bias=100.0 mm/s, A=50.0 mm/s
 %% ========================================================================
 fprintf('\n>>> Running Test 2: Frictional Lag Multi-Regime...\n');
 
 lag_w_sweep = [0.1, 1, 25, 50, 100];
 
-% 3 Operating Regimes: [Bias, Amplitude]
+% 4 Operating Regimes: [Bias, Amplitude] in m/s
 regimes = [
-    1.0e-3, 0.8e-3;   % Regime 1: Stribeck Cliff
-    1.5e-3, 1.0e-3;   % Regime 2: Canonical
-    5.0e-3, 2.0e-3    % Regime 3: Viscous Dominance
+    1.0e-3,   0.8e-3;    % Regime 1: Stribeck Cliff (1.0 +/- 0.8 mm/s)
+    1.5e-3,   1.0e-3;    % Regime 2: Canonical (1.5 +/- 1.0 mm/s)
+    5.0e-3,   2.0e-3;    % Regime 3: Moderate Sliding (5.0 +/- 2.0 mm/s)
+    100.0e-3, 50.0e-3    % Regime 4: High-Speed Viscous (100 +/- 50 mm/s)
 ];
 regime_titles = {
     'Stribeck Cliff (1.0 \pm 0.8 mm/s)', ...
     'Canonical Region (1.5 \pm 1.0 mm/s)', ...
-    'Viscous Region (5.0 \pm 2.0 mm/s)'
+    'Moderate Region (5.0 \pm 2.0 mm/s)', ...
+    'High-Speed Viscous (100 \pm 50 mm/s)'
 };
 
-fig2 = figure('Name', 'Test 2: Frictional Lag Multi-Regime', 'Color', 'w', 'Position', [50, 100, 1200, 400]);
+% Widened to 1550px to comfortably fit 4 subplots
+fig2 = figure('Name', 'Test 2: Frictional Lag Multi-Regime', 'Color', 'w', 'Position', [30, 100, 1550, 380]);
 
-for reg_idx = 1:3
-    subplot(1, 3, reg_idx); hold on; grid on;
+for reg_idx = 1:4
+    subplot(1, 4, reg_idx); hold on; grid on;
     vb = regimes(reg_idx, 1);
     va = regimes(reg_idx, 2);
     
