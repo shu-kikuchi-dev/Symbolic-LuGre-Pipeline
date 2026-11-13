@@ -13,7 +13,7 @@ fprintf('====================================================================\n'
 
 date_and_exp = '26-11-06_test2-with-viscous-regime-test3-with-logscale';
 
-save_dir = fullfile(pwd, 'tmp-outputs', 'model15', date_and_exp);
+save_dir = fullfile(pwd, 'tmp-outputs', 'model15', '4-characteristics', date_and_exp);
 if ~exist(save_dir, 'dir'), mkdir(save_dir); end
 
 % --- Physical LuGre Parameters (Ground Truth) ---
