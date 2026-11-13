@@ -18,7 +18,7 @@ fprintf('====================================================================\n'
 % =========================================================================
 % --- NOISE & SENSOR DISTURBANCE SETTINGS (TOGGLE SWITCH) ---
 % =========================================================================
-p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
+p.use_noise = true;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
 p.enc_bits    = 14;     % 14-bit encoder (16,384 counts/rev)
@@ -164,49 +164,47 @@ exportgraphics(fig1, fig1_path, 'ContentType', 'vector');
 fprintf('   -> Saved Figure 1: %s\n', fig1_path);
 
 %% ========================================================================
-%% --- REFINEMENT POINT 2: TRAJECTORY 2 (Smooth Cosine Ramp Micro-Steps)
+%% --- TRAJECTORY 2: MULTI-STEP MICRO-POSITIONING (Smooth Transitions) ---
 %% ========================================================================
 fprintf('\n>>> Simulating Trajectory 2: Multi-Step Micro-Positioning...\n');
 t_end_2 = 12.0;
 t_vec2 = 0:Ts:t_end_2;
 N2 = length(t_vec2);
 
-th_targets = [0.0, 0.01, 0.05, 0.02]; % Target angles [rad]
-step_times = [0.0, 2.0,  5.0,  8.0];  % Step start times [s]
-T_trans    = 0.3;                     % 300 ms smooth transition duration
+% Define step transitions: [start_time, target_from, target_to]
+steps = [
+    2.0,  0.00,  0.01;   % Step 1: 0 -> 10 mrad
+    5.0,  0.01,  0.05;   % Step 2: 10 -> 50 mrad
+    8.0,  0.05,  0.02    % Step 3: Reversal down to 20 mrad
+];
+T_trans = 0.4; % 400 ms smooth transition duration
 
 th_d2 = zeros(size(t_vec2));
 om_d2 = zeros(size(t_vec2));
 al_d2 = zeros(size(t_vec2));
 
-for i = 1:N2
-    t_curr = t_vec2(i);
-    seg = find(t_curr >= step_times, 1, 'last');
-    th_start = th_targets(seg);
+for s_idx = 1:size(steps, 1)
+    t_s      = steps(s_idx, 1);
+    th_from  = steps(s_idx, 2);
+    th_to    = steps(s_idx, 3);
+    delta_th = th_to - th_from;
     
-    if seg < length(step_times)
-        th_next = th_targets(seg + 1);
-        t_start = step_times(seg + 1);
-        
-        if t_curr >= t_start && t_curr < (t_start + T_trans)
-            % Smooth cosine transition (C^2 continuous)
-            tau = (t_curr - t_start) / T_trans;
-            s   = 0.5 * (1 - cos(pi * tau));
-            ds  = (pi / (2 * T_trans)) * sin(pi * tau);
-            dds = ((pi^2) / (2 * T_trans^2)) * cos(pi * tau);
-            
-            delta_th = th_next - th_start;
-            th_d2(i) = th_start + delta_th * s;
-            om_d2(i) = delta_th * ds;
-            al_d2(i) = delta_th * dds;
-        elseif t_curr >= (t_start + T_trans)
-            th_d2(i) = th_next;
-        else
-            th_d2(i) = th_start;
-        end
+    % 1. During smooth cosine transition: [t_s, t_s + T_trans)
+    idx_trans = find(t_vec2 >= t_s & t_vec2 < (t_s + T_trans));
+    tau = (t_vec2(idx_trans) - t_s) / T_trans;
+    
+    th_d2(idx_trans) = th_from + delta_th * 0.5 * (1 - cos(pi * tau));
+    om_d2(idx_trans) = delta_th * (pi / (2 * T_trans)) * sin(pi * tau);
+    al_d2(idx_trans) = delta_th * ((pi^2) / (2 * T_trans^2)) * cos(pi * tau);
+    
+    % 2. Holding target after transition until next step
+    if s_idx < size(steps, 1)
+        t_next = steps(s_idx + 1, 1);
     else
-        th_d2(i) = th_targets(end);
+        t_next = t_end_2;
     end
+    idx_hold = find(t_vec2 >= (t_s + T_trans) & t_vec2 <= t_next);
+    th_d2(idx_hold) = th_to;
 end
 
 results_t2 = cell(4, 1);
