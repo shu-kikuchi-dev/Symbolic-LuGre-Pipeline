@@ -340,8 +340,6 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
         
         % 3. Friction Feedforward (Unified Model)
         vd = om_d(k);
-        % --- Gated Feedforward: Active during motion, fades out at standstill ---
-        v_gate = tanh(abs(vd) / 1e-4); % = 1.0 during motion, = 0.0 at rest
         switch method
             case 'No Comp (PD)'
                 T_fric = 0.0;
@@ -361,7 +359,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                     z_ctrl = z_ctrl + Ts * vd;
                 end
                 dz_c = vd - beta_l * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_gate;
+                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_d;
                 
             case 'Model 15 (Proposed)'
                 % PURE ALGEBRAIC BACKWARD EULER (Zero exp, unconditionally stable!)
@@ -372,7 +370,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 z_ctrl = (z_ctrl + Ts * vd) / (1 + beta_s * Ts);
                 
                 dz_c   = vd - beta_s * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_gate;
+                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_d;
         end
         
         % Total Commanded Control Torque
