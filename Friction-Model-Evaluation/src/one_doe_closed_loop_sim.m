@@ -6,7 +6,7 @@
 %     - Case A: Baseline PD (No compensation)
 %     - Case B: PD + Classical Coulomb + Viscous Feedforward
 %     - Case C: PD + Full LuGre Feedforward (Upper Benchmark)
-%     - Case D: PD + Proposed Symbolic Model 15 Feedforward
+%     - Case D: PD + Proposed Symbolic Model 15 Feedforward (Algebraic Backward Euler)
 % ========================================================================
 clearvars; clc; close all;
 
@@ -21,15 +21,15 @@ fprintf('====================================================================\n'
 p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
-p.enc_bits = 14;        % 14-bit encoder (16,384 counts/rev)
-p.fc_vel   = 80.0;      % Velocity Low-Pass Filter cutoff frequency [Hz]
+p.enc_bits    = 14;     % 14-bit encoder (16,384 counts/rev)
+p.fc_vel      = 80.0;   % Velocity Low-Pass Filter cutoff frequency [Hz]
 p.tau_cog_amp = 0.03;   % Cogging torque amplitude [Nm] (~3% rated torque)
 p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-13_first-attempt';
+date_and_exp = '26-11-13_closed-loop-final';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -72,7 +72,9 @@ c_map = {
     [0.850, 0.325, 0.098]       % Red-Orange: Model 15
 };
 
-%% --- 2. EXECUTION TIME BENCHMARK (Calculation Cost in us) ---
+%% ========================================================================
+%% --- REFINEMENT POINT 1: EXECUTION TIME BENCHMARK (Calculation Cost in us)
+%% ========================================================================
 fprintf('\n>>> Benchmarking Model Execution Time (100,000 evaluations)...\n');
 v_test = 0.05; z_test = 1e-5;
 N_eval = 100000;
@@ -84,32 +86,35 @@ for i = 1:N_eval
 end
 t_cv = (toc / N_eval) * 1e6;
 
-% 2. Full LuGre Update
+% 2. Full LuGre Update (Exponential form)
 tic;
 z_l = z_test;
 for i = 1:N_eval
     gv = p.Fc + (p.Fs - p.Fc) * exp(-(v_test / p.vs)^2);
-    dz_l = v_test - (p.sigma0 * abs(v_test) / gv) * z_l;
-    z_l = z_l + Ts * dz_l;
+    beta_l = (p.sigma0 * abs(v_test)) / gv;
+    z_ss_l = (gv / p.sigma0) * sign(v_test);
+    z_l = z_ss_l + (z_l - z_ss_l) * exp(-beta_l * Ts);
+    dz_l = v_test - beta_l * z_l;
     T_lugre = p.sigma0 * z_l + p.sigma1 * dz_l + p.sigma2 * v_test;
 end
 t_lugre = (toc / N_eval) * 1e6;
 
-% 3. Model 15 Update
+% 3. Model 15 Update (Pure Algebraic Backward Euler - ZERO exp!)
 tic;
 z_s = z_test;
 for i = 1:N_eval
-    s0_z = p.S0 * z_s;
-    dz_s = v_test - abs(v_test) * (s0_z - (s0_z / (p.K * v_test^2 + p.C2)));
-    z_s = z_s + Ts * dz_s;
-    T_s15 = p.sigma0 * z_s + p.sigma1 * dz_s + p.sigma2 * v_test;
+    denom_s = p.K * (v_test^2) + p.C2;
+    beta_s  = abs(v_test) * p.S0 * (1 - 1 / denom_s);
+    z_s     = (z_s + Ts * v_test) / (1 + beta_s * Ts);
+    dz_s    = v_test - beta_s * z_s;
+    T_s15   = p.sigma0 * z_s + p.sigma1 * dz_s + p.sigma2 * v_test;
 end
 t_s15 = (toc / N_eval) * 1e6;
 
 t_exec = [0.05, t_cv, t_lugre, t_s15]; % [us] (PD alone baseline is approx 0.05 us)
 fprintf('   -> Coulomb+Viscous : %.3f us\n', t_cv);
 fprintf('   -> LuGre ODE       : %.3f us\n', t_lugre);
-fprintf('   -> Model 15        : %.3f us (%.1f%% faster than LuGre)\n', t_s15, (1 - t_s15/t_lugre)*100);
+fprintf('   -> Model 15 (Alg.) : %.3f us (%.1f%% faster than LuGre)\n', t_s15, (1 - t_s15/t_lugre)*100);
 
 %% ========================================================================
 %% TRAJECTORY 1: LOW-VELOCITY ZERO-CROSSING (Sinusoid)
@@ -159,28 +164,50 @@ exportgraphics(fig1, fig1_path, 'ContentType', 'vector');
 fprintf('   -> Saved Figure 1: %s\n', fig1_path);
 
 %% ========================================================================
-%% TRAJECTORY 2: MULTI-STEP MICRO-POSITIONING (Stick-Slip Suppression)
+%% --- REFINEMENT POINT 2: TRAJECTORY 2 (Smooth Cosine Ramp Micro-Steps)
 %% ========================================================================
 fprintf('\n>>> Simulating Trajectory 2: Multi-Step Micro-Positioning...\n');
 t_end_2 = 12.0;
 t_vec2 = 0:Ts:t_end_2;
 N2 = length(t_vec2);
 
+th_targets = [0.0, 0.01, 0.05, 0.02]; % Target angles [rad]
+step_times = [0.0, 2.0,  5.0,  8.0];  % Step start times [s]
+T_trans    = 0.3;                     % 300 ms smooth transition duration
+
 th_d2 = zeros(size(t_vec2));
-for i = 1:N2
-    t_curr = t_vec2(i);
-    if t_curr < 2.0
-        th_d2(i) = 0.0;
-    elseif t_curr < 5.0
-        th_d2(i) = 0.01;  % 10 mrad step
-    elseif t_curr < 8.0
-        th_d2(i) = 0.05;  % 50 mrad step
-    else
-        th_d2(i) = 0.02;  % Step reversal
-    end
-end
 om_d2 = zeros(size(t_vec2));
 al_d2 = zeros(size(t_vec2));
+
+for i = 1:N2
+    t_curr = t_vec2(i);
+    seg = find(t_curr >= step_times, 1, 'last');
+    th_start = th_targets(seg);
+    
+    if seg < length(step_times)
+        th_next = th_targets(seg + 1);
+        t_start = step_times(seg + 1);
+        
+        if t_curr >= t_start && t_curr < (t_start + T_trans)
+            % Smooth cosine transition (C^2 continuous)
+            tau = (t_curr - t_start) / T_trans;
+            s   = 0.5 * (1 - cos(pi * tau));
+            ds  = (pi / (2 * T_trans)) * sin(pi * tau);
+            dds = ((pi^2) / (2 * T_trans^2)) * cos(pi * tau);
+            
+            delta_th = th_next - th_start;
+            th_d2(i) = th_start + delta_th * s;
+            om_d2(i) = delta_th * ds;
+            al_d2(i) = delta_th * dds;
+        elseif t_curr >= (t_start + T_trans)
+            th_d2(i) = th_next;
+        else
+            th_d2(i) = th_start;
+        end
+    else
+        th_d2(i) = th_targets(end);
+    end
+end
 
 results_t2 = cell(4, 1);
 for m_idx = 1:4
@@ -263,7 +290,7 @@ writetable(T_results, table_txt_path, 'Delimiter', '\t');
 fprintf('   -> Saved Table CSV & TXT to: %s\n', save_dir);
 
 %% ========================================================================
-%% HELPER FUNCTIONS: PLANT INTEGRATOR & CONTROLLER LOOP
+%% --- REFINEMENT POINT 3: CONTROLLER LOOP & PLANT INTEGRATOR
 %% ========================================================================
 
 function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
@@ -284,7 +311,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
     d_th_res     = (2 * pi) / (2^p.enc_bits);
     alpha_lpf    = (2 * pi * p.fc_vel * Ts) / (1 + 2 * pi * p.fc_vel * Ts);
     
-    % Sub-stepping parameters (10 substeps per control step to prevent stiffness issues)
+    % Sub-stepping parameters (10 substeps per control step)
     n_sub = 10;
     dt = Ts / n_sub;
     
@@ -324,15 +351,27 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 T_fric = p.Fc * tanh(vd / 1e-4) + p.sigma2 * vd;
                 
             case 'LuGre (Truth)'
-                gv_d = p.Fc + (p.Fs - p.Fc) * exp(-(vd / p.vs)^2);
-                dz_c = vd - (p.sigma0 * abs(vd) / gv_d) * z_ctrl;
-                z_ctrl = z_ctrl + Ts * dz_c;
+                % Unconditionally stable exponential update
+                gv_d   = p.Fc + (p.Fs - p.Fc) * exp(-(vd / p.vs)^2);
+                beta_l = (p.sigma0 * abs(vd)) / gv_d;
+                z_ss_l = (gv_d / p.sigma0) * sign(vd);
+                if beta_l > 1e-6
+                    z_ctrl = z_ss_l + (z_ctrl - z_ss_l) * exp(-beta_l * Ts);
+                else
+                    z_ctrl = z_ctrl + Ts * vd;
+                end
+                dz_c = vd - beta_l * z_ctrl;
                 T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
                 
             case 'Model 15 (Proposed)'
-                s0_z = p.S0 * z_ctrl;
-                dz_c = vd - abs(vd) * (s0_z - (s0_z / (p.K * (vd^2) + p.C2)));
-                z_ctrl = z_ctrl + Ts * dz_c;
+                % PURE ALGEBRAIC BACKWARD EULER (Zero exp, unconditionally stable!)
+                denom_s = p.K * (vd^2) + p.C2;
+                beta_s  = abs(vd) * p.S0 * (1 - 1 / denom_s);
+                
+                % Single-line closed-form algebraic solve:
+                z_ctrl = (z_ctrl + Ts * vd) / (1 + beta_s * Ts);
+                
+                dz_c   = vd - beta_s * z_ctrl;
                 T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
         end
         
