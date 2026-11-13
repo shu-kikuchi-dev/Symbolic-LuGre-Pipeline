@@ -159,8 +159,8 @@ for i = 1:N2
         th_d2(i) = 0.02;  % Step reversal
     end
 end
-om_d2 = [0, diff(th_d2)/Ts];
-al_d2 = [0, diff(om_d2)/Ts];
+om_d2 = zeros(size(t_vec2));
+al_d2 = zeros(size(t_vec2));
 
 results_t2 = cell(4, 1);
 for m_idx = 1:4
@@ -210,7 +210,7 @@ for m_idx = 1:4
     om_act = results_t1{m_idx}.om;
     for zc = zc_indices(2:end-1)
         target_sign = sign(om_d1(zc + 1));
-        post_window = zc:(zc + round(0.5/Ts));
+        post_window = zc:min(N1, zc + round(1.5/Ts));
         idx_cross = find(sign(om_act(post_window)) == target_sign, 1, 'first');
         if ~isempty(idx_cross)
             delays = [delays, (idx_cross - 1) * Ts * 1000]; % [ms]
