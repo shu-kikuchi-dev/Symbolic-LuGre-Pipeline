@@ -18,7 +18,7 @@ fprintf('====================================================================\n'
 % =========================================================================
 % --- NOISE & SENSOR DISTURBANCE SETTINGS (TOGGLE SWITCH) ---
 % =========================================================================
-p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
+p.use_noise = true;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
 p.enc_bits    = 16;     % 16-bit encoder (16,384 counts/rev)
@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-13_refine-velocity-gate';
+date_and_exp = '26-11-13_overhaul-2';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -359,7 +359,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                     z_ctrl = z_ctrl + Ts * vd;
                 end
                 dz_c = vd - beta_l * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * vd;
+                T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
                 
             case 'Model 15 (Proposed)'
                 % PURE ALGEBRAIC BACKWARD EULER (Zero exp, unconditionally stable!)
@@ -370,7 +370,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 z_ctrl = (z_ctrl + Ts * vd) / (1 + beta_s * Ts);
                 
                 dz_c   = vd - beta_s * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * vd;
+                T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
         end
         
         % Total Commanded Control Torque
