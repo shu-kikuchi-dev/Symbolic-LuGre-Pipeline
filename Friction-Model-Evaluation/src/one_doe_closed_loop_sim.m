@@ -15,6 +15,21 @@ fprintf('   STARTING 1-DOF CLOSED-LOOP ACTUATOR CONTROL EVALUATION           \n'
 fprintf('====================================================================\n');
 
 %% --- 1. SYSTEM PARAMETERS ---
+% =========================================================================
+% --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
+% =========================================================================
+date_and_exp = '26-11-13_first-attempt';
+
+if p.use_noise
+    mode_tag = 'Phase2_Noisy_Robustness';
+else
+    mode_tag = 'Phase1_Ideal_ZeroNoise';
+end
+
+save_dir = fullfile(pwd, 'tmp-outputs', 'model15', '1-DOF', date_and_exp, mode_tag);
+if ~exist(save_dir, 'dir'), mkdir(save_dir); end
+fprintf('   -> Saving outputs to: %s\n', save_dir);
+
 % Actuator Inertia & Time Base
 p.J  = 0.01;            % Motor + Load Inertia [kg*m^2]
 f_ctrl = 1000;          % Control frequency: 1 kHz
@@ -138,6 +153,11 @@ for m_idx = 1:4
 end
 xlabel('Time [s]'); ylabel('Torque T^* [Nm]'); title('Commanded Torque T^*(t)');
 
+% Export Figure 1 as Vector PDF
+fig1_path = fullfile(save_dir, sprintf('Fig1_Traj1_ZeroCrossing_%s.pdf', mode_tag));
+exportgraphics(fig1, fig1_path, 'ContentType', 'vector');
+fprintf('   -> Saved Figure 1: %s\n', fig1_path);
+
 %% ========================================================================
 %% TRAJECTORY 2: MULTI-STEP MICRO-POSITIONING (Stick-Slip Suppression)
 %% ========================================================================
@@ -190,6 +210,11 @@ for m_idx = 1:4
 end
 xlabel('Time [s]'); ylabel('Torque T^* [Nm]'); title('Commanded Torque T^*(t)');
 
+% Export Figure 2 as Vector PDF
+fig2_path = fullfile(save_dir, sprintf('Fig2_Traj2_MicroStep_%s.pdf', mode_tag));
+exportgraphics(fig2, fig2_path, 'ContentType', 'vector');
+fprintf('   -> Saved Figure 2: %s\n', fig2_path);
+
 %% ========================================================================
 %% --- 3. METRICS COMPUTATION & THESIS TABLE EXPORT ---
 %% ========================================================================
@@ -228,6 +253,14 @@ fprintf('                     FINAL THESIS EVALUATION TABLE                 \n')
 fprintf('====================================================================\n');
 disp(T_results);
 fprintf('====================================================================\n');
+
+% Export Table as CSV (Excel) and formatted TXT
+table_csv_path = fullfile(save_dir, sprintf('Table_Results_%s.csv', mode_tag));
+writetable(T_results, table_csv_path);
+
+table_txt_path = fullfile(save_dir, sprintf('Table_Results_%s.txt', mode_tag));
+writetable(T_results, table_txt_path, 'Delimiter', '\t');
+fprintf('   -> Saved Table CSV & TXT to: %s\n', save_dir);
 
 %% ========================================================================
 %% HELPER FUNCTIONS: PLANT INTEGRATOR & CONTROLLER LOOP
