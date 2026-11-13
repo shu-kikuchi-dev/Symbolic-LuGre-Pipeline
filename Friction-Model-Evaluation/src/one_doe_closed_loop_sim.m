@@ -21,7 +21,7 @@ fprintf('====================================================================\n'
 p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
-p.enc_bits    = 16;     % 14-bit encoder (16,384 counts/rev)
+p.enc_bits    = 16;     % 16-bit encoder (16,384 counts/rev)
 p.fc_vel      = 30.0;   % Velocity Low-Pass Filter cutoff frequency [Hz]
 p.tau_cog_amp = 0.03;   % Cogging torque amplitude [Nm] (~3% rated torque)
 p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
@@ -359,7 +359,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                     z_ctrl = z_ctrl + Ts * vd;
                 end
                 dz_c = vd - beta_l * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_d;
+                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * vd;
                 
             case 'Model 15 (Proposed)'
                 % PURE ALGEBRAIC BACKWARD EULER (Zero exp, unconditionally stable!)
@@ -370,7 +370,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 z_ctrl = (z_ctrl + Ts * vd) / (1 + beta_s * Ts);
                 
                 dz_c   = vd - beta_s * z_ctrl;
-                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * v_d;
+                T_fric = (p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd) * vd;
         end
         
         % Total Commanded Control Torque
