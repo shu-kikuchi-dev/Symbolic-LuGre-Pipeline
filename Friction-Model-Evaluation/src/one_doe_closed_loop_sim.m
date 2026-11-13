@@ -18,18 +18,18 @@ fprintf('====================================================================\n'
 % =========================================================================
 % --- NOISE & SENSOR DISTURBANCE SETTINGS (TOGGLE SWITCH) ---
 % =========================================================================
-p.use_noise = true;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
+p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
-p.enc_bits    = 14;     % 14-bit encoder (16,384 counts/rev)
-p.fc_vel      = 80.0;   % Velocity Low-Pass Filter cutoff frequency [Hz]
+p.enc_bits    = 16;     % 14-bit encoder (16,384 counts/rev)
+p.fc_vel      = 30.0;   % Velocity Low-Pass Filter cutoff frequency [Hz]
 p.tau_cog_amp = 0.03;   % Cogging torque amplitude [Nm] (~3% rated torque)
 p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-13_refine-trajectory2';
+date_and_exp = '26-11-13_refine-velocity-gate';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -48,7 +48,7 @@ Ts = 1 / f_ctrl;        % Control period: 1 ms
 
 % Feedback Controller Gains (PD)
 Kp = 200.0;             % Proportional gain [Nm/rad]
-Kv = 10.0;              % Derivative gain [Nm*s/rad]
+Kv = 2.0;              % Derivative gain [Nm*s/rad]
 
 % True Actuator Friction Parameters (LuGre Plant)
 p.sigma0 = 1e5;
