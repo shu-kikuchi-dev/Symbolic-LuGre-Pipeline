@@ -309,8 +309,8 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
     d_th_res     = (2 * pi) / (2^p.enc_bits);
     alpha_lpf    = (2 * pi * p.fc_vel * Ts) / (1 + 2 * pi * p.fc_vel * Ts);
     
-    % Sub-stepping parameters (10 substeps per control step)
-    n_sub = 10;
+    % Sub-stepping parameters (100 substeps per control step)
+    n_sub = 100;
     dt = Ts / n_sub;
     
     for k = 1:N
