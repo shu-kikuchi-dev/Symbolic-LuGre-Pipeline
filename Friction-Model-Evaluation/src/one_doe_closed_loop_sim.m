@@ -244,14 +244,38 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
     om = om_d(1);
     z_true = 0.0;    % Physical plant LuGre state
     z_ctrl = 0.0;    % Controller feedforward internal state
+
+    % Sensor memory and filter constants
+    th_meas_prev = th;
+    om_meas      = om;
+    d_th_res     = (2 * pi) / (2^p.enc_bits);
+    alpha_lpf    = (2 * pi * p.fc_vel * Ts) / (1 + 2 * pi * p.fc_vel * Ts);
     
     % Sub-stepping parameters (10 substeps per control step to prevent stiffness issues)
     n_sub = 10;
     dt = Ts / n_sub;
     
     for k = 1:N
-        % 1. Feedback Torque (PD)
-        T_fb = Kp * (th_d(k) - th) + Kv * (om_d(k) - om);
+        % =================================================================
+        % 0. Sensor Measurement Stage (Quantization & Filter Lag)
+        % =================================================================
+        if p.use_noise
+            % 14-bit Quantization + Gaussian Jitter
+            th_quant = d_th_res * round(th / d_th_res);
+            th_meas  = th_quant + (0.2 * d_th_res) * randn();
+            
+            % Numerical velocity differentiation + 1st-order LPF
+            om_raw       = (th_meas - th_meas_prev) / Ts;
+            th_meas_prev = th_meas;
+            om_meas      = (1 - alpha_lpf) * om_meas + alpha_lpf * om_raw;
+        else
+            % Ideal noiseless read
+            th_meas = th;
+            om_meas = om;
+        end
+        
+        % 1. Feedback Torque (PD) - Uses measured states
+        T_fb = Kp * (th_d(k) - th_meas) + Kv * (om_d(k) - om_meas);
         
         % 2. Inertial Feedforward (Acceleration only; linear viscous damping omitted)
         T_ff = p.J * al_d(k);
@@ -301,8 +325,14 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
             dz_true = om - a * z_true;
             F_fric = p.sigma0 * z_true + p.sigma1 * dz_true + p.sigma2 * om;
             
-            % Mechanical Dynamics
-            d_om = (T_star - F_fric) / p.J;
+            % Mechanical Dynamics (with lumped hardware disturbances)
+            if p.use_noise
+                tau_dist = p.tau_cog_amp * sin(12 * th) + p.tau_adc_std * randn();
+            else
+                tau_dist = 0.0;
+            end
+            
+            d_om = ((T_star + tau_dist) - F_fric) / p.J;
             om = om + d_om * dt;
             th = th + om * dt;
         end
