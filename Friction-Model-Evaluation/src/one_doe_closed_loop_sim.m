@@ -393,7 +393,7 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
         e_pos = th_d(k) - th_meas; % Note: equals -(x - x_d) in 1995 paper.
 
         % Standstill Anti-Hunting Deadband (prevents integral windup at rest)
-        if abs(vd) < 1e-4 && abd(e_pos) < 5e-4
+        if abs(vd) < 1e-4 && abs(e_pos) < 5e-4
             e_obs = 0.0;
         else
             e_obs = e_pos;
