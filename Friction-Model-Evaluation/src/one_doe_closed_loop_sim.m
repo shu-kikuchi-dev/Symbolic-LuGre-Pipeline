@@ -18,7 +18,7 @@ fprintf('====================================================================\n'
 % =========================================================================
 % --- NOISE & SENSOR DISTURBANCE SETTINGS (TOGGLE SWITCH) ---
 % =========================================================================
-p.use_noise = true;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
+p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
 p.enc_bits    = 16;     % 16-bit encoder (16,384 counts/rev)
@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-14_try-trajectory3';
+date_and_exp = '26-11-14_update-traj3-params';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -248,11 +248,11 @@ t_end_3 = 20.0;
 t_vec3  = 0:Ts:t_end_3;
 
 % Compliant impedance control gains (realistic for dynamic robots!)
-Kp_soft = 50.0;
-Kv_soft = 1.4;
+Kp_soft = 60.0;
+Kv_soft = 2.0;
 
 % Ultra-low-speed trajectory directly inside the Stribeck cliff (v_max = 0.0012 rad/s)
-A_crawl = 0.003; w_crawl = 0.4;
+A_crawl = 0.008; w_crawl = 1.0;
 th_d3 = A_crawl * (1 - cos(w_crawl * t_vec3));
 om_d3 = A_crawl * w_crawl * sin(w_crawl * t_vec3);
 al_d3 = A_crawl * (w_crawl^2) * cos(w_crawl * t_vec3);
