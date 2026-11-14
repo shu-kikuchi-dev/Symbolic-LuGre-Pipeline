@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-13_delete-over-multiplied-vd';
+date_and_exp = '26-11-14_try-trajectory3';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -239,6 +239,55 @@ xlabel('Time [s]'); ylabel('Torque T^* [Nm]'); title('Commanded Torque T^*(t)');
 fig2_path = fullfile(save_dir, sprintf('Fig2_Traj2_MicroStep_%s.pdf', mode_tag));
 exportgraphics(fig2, fig2_path, 'ContentType', 'vector');
 fprintf('   -> Saved Figure 2: %s\n', fig2_path);
+
+%% ========================================================================
+%% TRAJECTORY 3: COMPLIANT STRIBECK CRAWL (Where Coulomb+Viscous FAILS!)
+%% ========================================================================
+fprintf('\n>>> Simulating Trajectory 3: Compliant Stribeck Crawl (Low Kp)...\n');
+t_end_3 = 20.0;
+t_vec3  = 0:Ts:t_end_3;
+
+% Compliant impedance control gains (realistic for dynamic robots!)
+Kp_soft = 50.0;
+Kv_soft = 1.4;
+
+% Ultra-low-speed trajectory directly inside the Stribeck cliff (v_max = 0.0012 rad/s)
+A_crawl = 0.003; w_crawl = 0.4;
+th_d3 = A_crawl * (1 - cos(w_crawl * t_vec3));
+om_d3 = A_crawl * w_crawl * sin(w_crawl * t_vec3);
+al_d3 = A_crawl * (w_crawl^2) * cos(w_crawl * t_vec3);
+
+results_t3 = cell(4, 1);
+for m_idx = 1:4
+    results_t3{m_idx} = run_actuator_sim(t_vec3, th_d3, om_d3, al_d3, methods{m_idx}, p, Kp_soft, Kv_soft, Ts);
+end
+
+% --- Plot Fig 3: Trajectory 3 Subplots ---
+fig3 = figure('Name', 'Trajectory 3: Compliant Stribeck Crawl', 'Color', 'w', 'Position', [150, 100, 950, 750]);
+
+subplot(3, 1, 1); hold on; grid on;
+plot(t_vec3, th_d3, 'k--', 'LineWidth', 1.2);
+for m_idx = 1:4
+    plot(t_vec3, results_t3{m_idx}.th, 'Color', c_map{m_idx}, 'LineWidth', 1.2);
+end
+ylabel('\theta [rad]'); title('Compliant Stribeck Crawl (K_p = 50, v_{max} = 1.2 mm/s): Target vs. Actual');
+legend([{'Desired \theta_d'}, methods], 'Location', 'northeast');
+
+subplot(3, 1, 2); hold on; grid on;
+for m_idx = 1:4
+    plot(t_vec3, results_t3{m_idx}.e, 'Color', c_map{m_idx}, 'LineWidth', 1.2);
+end
+ylabel('Error e(t) [rad]'); title('Tracking Error e(t) (Exposes Coulomb+Viscous Failure)');
+
+subplot(3, 1, 3); hold on; grid on;
+for m_idx = 1:4
+    plot(t_vec3, results_t3{m_idx}.T_cmd, 'Color', c_map{m_idx}, 'LineWidth', 1.1);
+end
+xlabel('Time [s]'); ylabel('Torque T^* [Nm]'); title('Commanded Torque T^*(t)');
+
+fig3_path = fullfile(save_dir, sprintf('Fig3_Traj3_StribeckCrawl_%s.pdf', mode_tag));
+exportgraphics(fig3, fig3_path, 'ContentType', 'vector');
+fprintf('   -> Saved Figure 3: %s\n', fig3_path);
 
 %% ========================================================================
 %% --- 3. METRICS COMPUTATION & THESIS TABLE EXPORT ---
