@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-14_update-traj3-params';
+date_and_exp = '26-11-14_with-position-error-term-in-observer';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -48,7 +48,7 @@ Ts = 1 / f_ctrl;        % Control period: 1 ms
 
 % Feedback Controller Gains (PD)
 Kp = 200.0;             % Proportional gain [Nm/rad]
-Kv = 2.0;              % Derivative gain [Nm*s/rad]
+Kv = 4.0;              % Derivative gain [Nm*s/rad]
 
 % True Actuator Friction Parameters (LuGre Plant)
 p.sigma0 = 1e5;
@@ -249,7 +249,7 @@ t_vec3  = 0:Ts:t_end_3;
 
 % Compliant impedance control gains (realistic for dynamic robots!)
 Kp_soft = 60.0;
-Kv_soft = 2.0;
+Kv_soft = 4.0;
 
 % Ultra-low-speed trajectory directly inside the Stribeck cliff (v_max = 0.0012 rad/s)
 A_crawl = 0.008; w_crawl = 1.0;
@@ -270,7 +270,7 @@ plot(t_vec3, th_d3, 'k--', 'LineWidth', 1.2);
 for m_idx = 1:4
     plot(t_vec3, results_t3{m_idx}.th, 'Color', c_map{m_idx}, 'LineWidth', 1.2);
 end
-ylabel('\theta [rad]'); title('Compliant Stribeck Crawl (K_p = 50, v_{max} = 1.2 mm/s): Target vs. Actual');
+ylabel('\theta [rad]'); title('Compliant Stribeck Crawl (K_p = 60, v_{max} = 8 mm/s): Target vs. Actual');
 legend([{'Desired \theta_d'}, methods], 'Location', 'northeast');
 
 subplot(3, 1, 2); hold on; grid on;
@@ -389,6 +389,8 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
         
         % 3. Friction Feedforward (Unified Model)
         vd = om_d(k);
+        k_obs = 1.0; % Observer error gain k > 0 (Canudas de Wit 1995, Eq. 12)
+        e_pos = th_d(k) - th_meas; % Note: equals -(x - x_d) in 1995 paper.
         switch method
             case 'No Comp (PD)'
                 T_fric = 0.0;
@@ -398,28 +400,23 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 T_fric = p.Fc * tanh(vd / 1e-4) + p.sigma2 * vd;
                 
             case 'LuGre (Truth)'
-                % Unconditionally stable exponential update
                 gv_d   = p.Fc + (p.Fs - p.Fc) * exp(-(vd / p.vs)^2);
                 beta_l = (p.sigma0 * abs(vd)) / gv_d;
-                z_ss_l = (gv_d / p.sigma0) * sign(vd);
                 if beta_l > 1e-6
+                    z_ss_l = (vd + k_obs * e_pos) / beta_l;
                     z_ctrl = z_ss_l + (z_ctrl - z_ss_l) * exp(-beta_l * Ts);
                 else
-                    z_ctrl = z_ctrl + Ts * vd;
+                    z_ctrl = z_ctrl + Ts * (vd + k_obs * e_pos);
                 end
-                dz_c = vd - beta_l * z_ctrl;
+                dz_c = vd - beta_l * z_ctrl + k_obs * e_pos;
                 T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
-                
+            
             case 'Model 15 (Proposed)'
-                % PURE ALGEBRAIC BACKWARD EULER (Zero exp, unconditionally stable!)
                 denom_s = p.K * (vd^2) + p.C2;
                 beta_s  = abs(vd) * p.S0 * (1 - 1 / denom_s);
-                
-                % Single-line closed-form algebraic solve:
-                z_ctrl = (z_ctrl + Ts * vd) / (1 + beta_s * Ts);
-                
-                dz_c   = vd - beta_s * z_ctrl;
-                T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
+                z_ctrl  = (z_ctrl + Ts * (vd + k_obs * e_pos)) / (1 + beta_s * Ts);
+                dz_c    = vd - beta_s * z_ctrl + k_obs * e_pos;
+                T_fric  = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
         end
         
         % Total Commanded Control Torque
