@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-14_with-position-error-term-in-observer';
+date_and_exp = '26-11-14_add-anti-chattering-deadband-to-error-term';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -389,8 +389,16 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
         
         % 3. Friction Feedforward (Unified Model)
         vd = om_d(k);
-        k_obs = 1.0; % Observer error gain k > 0 (Canudas de Wit 1995, Eq. 12)
+        k_obs = 0.5; % Observer error gain k > 0 (Canudas de Wit 1995, Eq. 12)
         e_pos = th_d(k) - th_meas; % Note: equals -(x - x_d) in 1995 paper.
+
+        % Standstill Anti-Hunting Deadband (prevents integral windup at rest)
+        if abs(vd) < 1e-4 && abd(e_pos) < 5e-4
+            e_obs = 0.0;
+        else
+            e_obs = e_pos;
+        end
+
         switch method
             case 'No Comp (PD)'
                 T_fric = 0.0;
@@ -403,19 +411,19 @@ function res = run_actuator_sim(t_vec, th_d, om_d, al_d, method, p, Kp, Kv, Ts)
                 gv_d   = p.Fc + (p.Fs - p.Fc) * exp(-(vd / p.vs)^2);
                 beta_l = (p.sigma0 * abs(vd)) / gv_d;
                 if beta_l > 1e-6
-                    z_ss_l = (vd + k_obs * e_pos) / beta_l;
+                    z_ss_l = (vd + k_obs * e_obs) / beta_l;
                     z_ctrl = z_ss_l + (z_ctrl - z_ss_l) * exp(-beta_l * Ts);
                 else
-                    z_ctrl = z_ctrl + Ts * (vd + k_obs * e_pos);
+                    z_ctrl = z_ctrl + Ts * (vd + k_obs * e_obs);
                 end
-                dz_c = vd - beta_l * z_ctrl + k_obs * e_pos;
+                dz_c = vd - beta_l * z_ctrl + k_obs * e_obs;
                 T_fric = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
             
             case 'Model 15 (Proposed)'
                 denom_s = p.K * (vd^2) + p.C2;
                 beta_s  = abs(vd) * p.S0 * (1 - 1 / denom_s);
-                z_ctrl  = (z_ctrl + Ts * (vd + k_obs * e_pos)) / (1 + beta_s * Ts);
-                dz_c    = vd - beta_s * z_ctrl + k_obs * e_pos;
+                z_ctrl  = (z_ctrl + Ts * (vd + k_obs * e_obs)) / (1 + beta_s * Ts);
+                dz_c    = vd - beta_s * z_ctrl + k_obs * e_obs;
                 T_fric  = p.sigma0 * z_ctrl + p.sigma1 * dz_c + p.sigma2 * vd;
         end
         
