@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-13_overhaul-2';
+date_and_exp = '26-11-13_delete-over-multiplied-vd';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
