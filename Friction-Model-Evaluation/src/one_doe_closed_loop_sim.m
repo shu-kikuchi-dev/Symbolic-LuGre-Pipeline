@@ -18,7 +18,7 @@ fprintf('====================================================================\n'
 % =========================================================================
 % --- NOISE & SENSOR DISTURBANCE SETTINGS (TOGGLE SWITCH) ---
 % =========================================================================
-p.use_noise = false;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
+p.use_noise = true;    % <<< SWITCH: Set to false (Phase 1) or true (Phase 2)
 
 % Hardware Noise Parameters
 p.enc_bits    = 16;     % 16-bit encoder (16,384 counts/rev)
@@ -29,7 +29,7 @@ p.tau_adc_std = 0.01;   % Current sensor ADC noise standard deviation [Nm]
 % =========================================================================
 % --- OUTPUT DIRECTORY & AUTOMATIC MODE TAGGING ---
 % =========================================================================
-date_and_exp = '26-11-14_add-anti-chattering-deadband-to-error-term';
+date_and_exp = '26-11-14_revenge-with-strict-condition';
 
 if p.use_noise
     mode_tag = 'Phase2_Noisy_Robustness';
@@ -248,11 +248,11 @@ t_end_3 = 20.0;
 t_vec3  = 0:Ts:t_end_3;
 
 % Compliant impedance control gains (realistic for dynamic robots!)
-Kp_soft = 60.0;
+Kp_soft = 50.0;
 Kv_soft = 4.0;
 
 % Ultra-low-speed trajectory directly inside the Stribeck cliff (v_max = 0.0012 rad/s)
-A_crawl = 0.008; w_crawl = 1.0;
+A_crawl = 0.003; w_crawl = 0.4;
 th_d3 = A_crawl * (1 - cos(w_crawl * t_vec3));
 om_d3 = A_crawl * w_crawl * sin(w_crawl * t_vec3);
 al_d3 = A_crawl * (w_crawl^2) * cos(w_crawl * t_vec3);
@@ -270,7 +270,7 @@ plot(t_vec3, th_d3, 'k--', 'LineWidth', 1.2);
 for m_idx = 1:4
     plot(t_vec3, results_t3{m_idx}.th, 'Color', c_map{m_idx}, 'LineWidth', 1.2);
 end
-ylabel('\theta [rad]'); title('Compliant Stribeck Crawl (K_p = 60, v_{max} = 8 mm/s): Target vs. Actual');
+ylabel('\theta [rad]'); title('Compliant Stribeck Crawl (K_p = 50, v_{max} = 1.2 mrad/s): Target vs. Actual');
 legend([{'Desired \theta_d'}, methods], 'Location', 'northeast');
 
 subplot(3, 1, 2); hold on; grid on;
